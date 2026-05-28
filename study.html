@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Medical Study Planner</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MedPlanner">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+<style>
+:root {
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f8fafc;
+  --color-border-secondary: #e2e8f0;
+  --color-border-tertiary: #cbd5e1;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-danger: #b91c1c;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --color-primary: #2563eb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { background: #f1f5f9; color: var(--color-text-primary); padding: 0 10px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+.app { padding: 1rem 0; max-width: 680px; margin: 0 auto; }
+.tab-bar { display: flex; gap: 2px; margin-bottom: 1.5rem; background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 4px; border: 0.5px solid var(--color-border-secondary); }
+.tab { flex: 1; padding: 10px 6px; font-size: 12px; cursor: pointer; border: none; background: none; color: var(--color-text-secondary); border-radius: var(--border-radius-md); transition: all .15s; white-space: nowrap; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tab i { font-size: 16px; }
+.tab.active { background: var(--color-background-primary); color: var(--color-primary); font-weight: 600; border: 0.5px solid var(--color-border-tertiary); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.sec { display: none; } .sec.active { display: block; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.125rem 1.25rem; margin-bottom: .875rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+.card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.card-icon { width: 34px; height: 34px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.card-title { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
+.card-sub { font-size: 11.5px; color: var(--color-text-secondary); margin-top: 1px; }
+.mg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: .875rem; }
+@media (max-width: 480px) { .mg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mt { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: .875rem .75rem; text-align: center; border: 0.5px solid var(--color-border-tertiary); }
+.ml { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 5px; }
+.mv { font-size: 18px; font-weight: 600; color: var(--color-text-primary); line-height: 1; }
+.ms { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
+lbl { font-size: 13px; color: var(--color-text-secondary); display: block; margin-bottom: 4px; font-weight: 500; }
+input[type=text], input[type=number], input[type=date], select { width: 100%; margin-bottom: 12px; padding: 8px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); font-size: 13px; color: var(--color-text-primary); outline: none; }
+input:focus, select:focus { border-color: var(--color-primary); }
+button { padding: 8px 14px; font-size: 13px; font-weight: 500; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); color: var(--color-text-primary); cursor: pointer; transition: background 0.1s; display: inline-flex; align-items: center; gap: 6px; }
+button:active { background: #edf2f7; }
+.sl { font-size: 11px; font-weight: 600; color: var(--color-text-tertiary); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 7px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.rb { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 11px 14px; margin: 6px 0; font-size: 13px; color: var(--color-text-primary); line-height: 1.9; border: 0.5px solid var(--color-border-tertiary); }
+.rb b { font-weight: 600; }
+.rb.info { background: #E6F1FB; border-color: #B5D4F4; color: #0C447C; }
+.si { display: grid; grid-template-columns: 22px 1fr 80px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.si:last-child { border-bottom: none; }
+.sn { font-size: 12px; text-align: center; font-weight: 600; border-radius: var(--border-radius-md); padding: 2px 0; }
+.si input { margin-bottom: 0; }
+.pr { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.pr:last-child { border-bottom: none; }
+.pb { flex: 1; height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; border: 0.5px solid var(--color-border-secondary); }
+.pf { height: 100%; border-radius: 3px; transition: width .4s; }
+.bdg { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; font-weight: 600; }
+.emp { text-align: center; padding: 2.5rem; color: var(--color-text-tertiary); font-size: 14px; }
+.ts { padding: 9px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.ts:last-child { border-bottom: none; }
+.tr { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.tr lbl { margin: 0; font-size: 13px; }
+.tr input { margin: 0; width: 75px; }
+.le { padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; justify-content: space-between; align-items: flex-start; }
+.le:last-child { border-bottom: none; }
+.db { color: var(--color-text-danger); cursor: pointer; border: none; background: none; padding: 0; margin-left: 8px; font-size: 13px; }
+.dv { height: 0.5px; background: var(--color-border-tertiary); margin: 14px 0; }
+.wg { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; }
+.dc { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 6px 4px; min-height: 80px; border: 0.5px solid var(--color-border-tertiary); }
+.dh { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-align: center; margin-bottom: 5px; }
+.ds { font-size: 11px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: 6px; padding: 4px 4px; margin-bottom: 3px; cursor: pointer; line-height: 1.3; text-align: center; }
+.da { color: var(--color-text-tertiary); text-align: center; border-style: dashed; border-color: var(--color-border-tertiary); background: none; font-weight: 600; }
+.dt { font-size: 10px; color: var(--color-text-secondary); text-align: center; margin-top: 4px; font-weight: 500; }
+.mb { font-size: 12px; padding: 6px 14px; cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: none; color: var(--color-text-secondary); border-radius: var(--border-radius-md); font-weight: 500; }
+.mb.on { background: #E6F1FB; color: #0C447C; border-color: #B5D4F4; font-weight: 600; }
+.se { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; margin-top: 8px; border: 0.5px solid var(--color-border-secondary); }
+.chip { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-right: 3px; }
+.warn-box { border-left: 3px solid #EF9F27; border-radius: 0; background: #FAEEDA; color: #412402; padding: 10px 14px; margin-bottom: 6px; font-size: 12px; line-height: 1.7; }
+.tip-box { font-size: 12px; color: #412402; margin-top: 6px; padding: 9px 12px; background: #FFF8F0; border-radius: var(--border-radius-md); border: 0.5px solid #FAC775; line-height: 1.7; }
+.tip-box b { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h2 class="sr-only">โปรแกรมวางแผนและติดตามการเรียน</h2>
+<div class="app">
+<div class="tab-bar">
+  <button class="tab active" onclick="sw('setup')"><i class="ti ti-settings" aria-hidden="true"></i> ตั้งค่า</button>
+  <button class="tab" onclick="sw('plan')"><i class="ti ti-calendar-week" aria-hidden="true"></i> แผนเรียน</button>
+  <button class="tab" onclick="sw('log')"><i class="ti ti-pencil" aria-hidden="true"></i> บันทึก</button>
+  <button class="tab" onclick="sw('dash')"><i class="ti ti-chart-bar" aria-hidden="true"></i> Dashboard</button>
+  <button class="tab" onclick="sw('hist')"><i class="ti ti-history" aria-hidden="true"></i> ประวัติ</button>
+</div>
+
+<div class="sec active" id="sec-setup">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#E6F1FB;color:#0C447C"><i class="ti ti-target" aria-hidden="true"></i></div>
+      <div><div class="card-title">เป้าหมายการเรียน</div><div class="card-sub">ขั้นตอนที่ 1 — กำหนดเป้าหมายและรายวิชา</div></div>
+    </div>
+    <lbl>ชื่อเป้าหมาย</lbl>
+    <input type="text" id="gName" placeholder="เช่น เตรียมสอบ Board ครั้งที่ 2"/>
+    <lbl>จำนวนวิชาทั้งหมด</lbl>
+    <input type="number" id="nSubj" min="1" value="5" style="max-width:130px"/>
+    <button onclick="genSubj()"><i class="ti ti-refresh" aria-hidden="true"></i> โหลดรายวิชา</button>
+    
+    <div id="subjSec" style="display:none">
+      <div class="dv"></div>
+      <div class="sl">รายชื่อวิชาและชั่วโมงเป้าหมาย</div>
+      <div style="display:grid;grid-template-columns:22px 1fr 80px;gap:8px;padding:4px 0 8px">
+        <div></div><div style="font-size:11px;color:var(--color-text-tertiary)">ชื่อวิชา</div><div style="font-size:11px;color:var(--color-text-tertiary)">ชม. รวม</div>
+      </div>
+      <div id="subjList"></div>
+      <div id="tHrsBox" class="rb info" style="display:none;margin-top:10px"><i class="ti ti-clock" aria-hidden="true"></i> รวมชั่วโมงทั้งหมด: <b id="tHrsLbl">-</b></div>
+      <div class="dv"></div>
+      <div class="sl">วันเริ่มเรียน</div>
+      <lbl style="margin-top:4px">วันเริ่มเรียนตามปฏิทิน</lbl>
+      <input type="date" id="sDate" style="max-width:200px"/>
+      <button onclick="saveSetup()" style="background:#E6F1FB;color:#0C447C;border-color:#B5D4F4"><i class="ti ti-check" aria-hidden="true"></i> บันทึกการตั้งค่า</button>
+    </div>
+  </div>
+</div>
+
+<div class="sec" id="sec-plan">
+  <div class="emp" id="noPlan" style="display:none"><i class="ti ti-alert-circle" style="font-size:20px" aria-hidden="true"></i><br>กรุณาตั้งค่าวิชาก่อน</div>
+  <div id="planCnt">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#EAF3DE;color:#27500A"><i class="ti ti-calendar-week" aria-hidden="true"></i></div>
+        <div><div class="card-title">แผนการเรียน</div><div class="card-sub">เลือกโหมดและกำหนดตารางเรียน</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="mb on" id="mW" onclick="setMode('W')"><i class="ti ti-table" aria-hidden="true"></i> รายสัปดาห์</button>
+        <button class="mb" id="mC" onclick="setMode('C')"><i class="ti ti-list" aria-hidden="true"></i> กำหนดเองอิสระ</button>
+      </div>
+      
+      <div id="pWeekly">
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px"><i class="ti ti-info-circle" aria-hidden="true"></i> คลิก <b>+</b> เพื่อเพิ่มวิชา · คลิกวิชาเพื่อแก้ไข · ระบบคำนวณวันตามปฏิทินจริงจากวันเริ่มเรียน</div>
+        <div class="wg" id="wGrid"></div>
+        <div id="wkEdit" style="display:none"></div>
+        <div id="wkSum" style="display:none;margin-top:10px"></div>
+      </div>
+      
+      <div id="pCustom" style="display:none">
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px"><i class="ti ti-info-circle" aria-hidden="true"></i> ระบุวิชา วัน/ช่วงเวลา และจำนวนชั่วโมงต่อสัปดาห์</div>
+        <div style="display:grid;grid-template-columns:1fr 90px 54px;gap:8px;padding:4px 0;margin-bottom:4px">
+          <div style="font-size:11px;color:var(--color-text-tertiary)">วิชา / วัน-ช่วงเวลา</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">ชม./สัปดาห์</div>
+          <div></div>
+        </div>
+        <div id="cSlots"></div>
+        <button onclick="addCSlot()" style="margin-top:8px"><i class="ti ti-plus" aria-hidden="true"></i> เพิ่มช่วงเรียน</button>
+        <div id="cSum" style="display:none;margin-top:10px"></div>
+      </div>
+      
+      <div class="dv"></div>
+      <button onclick="savePlan()" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97"><i class="ti ti-check" aria-hidden="true"></i> บันทึกแผนการเรียน</button>
+    </div>
+    
+    <div class="card" id="planResCard" style="display:none">
+      <div class="card-header">
+        <div class="card-icon" style="background:#EAF3DE;color:#27500A"><i class="ti ti-chart-pie" aria-hidden="true"></i></div>
+        <div><div class="card-title">สรุปแผนการเรียน</div><div class="card-sub" id="planResModeLbl">—</div></div>
+      </div>
+      <div id="planRes"></div>
+      <div id="planWarnBox" style="margin-top:10px;display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec" id="sec-log">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#FAEEDA;color:#633806"><i class="ti ti-clock" aria-hidden="true"></i></div>
+      <div><div class="card-title">บันทึกการเรียนวันนี้</div><div class="card-sub">ใส่จำนวนชั่วโมงที่เรียนแต่ละวิชา</div></div>
+    </div>
+    <div class="emp" id="noLog" style="display:none"><i class="ti ti-alert-circle" aria-hidden="true"></i> กรุณาตั้งค่าก่อน</div>
+    <div id="logFrm">
+      <lbl>วันที่บันทึก</lbl>
+      <input type="date" id="lDate" style="max-width:200px;margin-bottom:14px"/>
+      <div id="lSubjs"></div>
+      <div id="lTotBox" class="rb info" style="display:none;margin-bottom:10px"><i class="ti ti-check" aria-hidden="true"></i> รวมวันนี้: <b id="lTotLbl">0</b> ชม.</div>
+      <button onclick="saveLog()" style="background:#FAEEDA;color:#633806;border-color:#FAC775"><i class="ti ti-check" aria-hidden="true"></i> บันทึกวันนี้</button>
+    </div>
+  </div>
+</div>
+
+<div class="sec" id="sec-dash">
+  <div class="emp" id="noDash" style="display:none"><i class="ti ti-alert-circle" style="font-size:20px" aria-hidden="true"></i><br>กรุณาตั้งค่าก่อน</div>
+  <div id="dashCnt">
+    <div class="mg" id="mGrid"></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#EAF3DE;color:#27500A"><i class="ti ti-list-check" aria-hidden="true"></i></div>
+        <div><div class="card-title">ความคืบหน้ารายวิชา</div><div class="card-sub">เปรียบเทียบชั่วโมงที่เรียนกับเป้าหมาย</div></div>
+      </div>
+      <div id="subjProg"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#EEEDFE;color:#3C3489"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+        <div><div class="card-title">แผนที่อัปเดต</div><div class="card-sub" id="dashPlanModeLbl">—</div></div>
+      </div>
+      <div id="updPlan"></div>
+      <div id="dashWarnBox" style="margin-top:10px;display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec" id="sec-hist">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#F1EFE8;color:#444441"><i class="ti ti-history" aria-hidden="true"></i></div>
+      <div><div class="card-title">ประวัติการบันทึก</div><div class="card-sub">รายการบันทึกทั้งหมด</div></div>
+    </div>
+    <div id="histList"><div class="emp">ยังไม่มีการบันทึก</div></div>
+    <button onclick="clrHist()" style="margin-top:8px;color:var(--color-text-danger)"><i class="ti ti-trash" aria-hidden="true"></i> ล้างประวัติทั้งหมด</button>
+  </div>
+</div>
+</div>
+
+<script>
+const DAYS_TH=['จ','อ','พ','พฤ','ศ','ส','อา'];
+const DAYS_FULL=['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์','อาทิตย์'];
+const CC=[
+  {bg:'#E6F1FB',tx:'#0C447C'},{bg:'#EAF3DE',tx:'#27500A'},{bg:'#FAEEDA',tx:'#633806'},
+  {bg:'#EEEDFE',tx:'#3C3489'},{bg:'#FAECE7',tx:'#712B13'},{bg:'#E1F5EE',tx:'#085041'},
+  {bg:'#FBEAF0',tx:'#72243E'},{bg:'#FCEBEB',tx:'#791F1F'}
+];
+const cc=i=>CC[i%CC.length];
+
+let S=JSON.parse(localStorage.getItem('spV7')||'null')||{
+  goalName:'',subjects:[],startDate:'',planMode:'W',
+  wPlan:[[],[],[],[],[],[],[]],cPlan:[],logs:[]
+};
+if(!S.wPlan||S.wPlan.length!==7)S.wPlan=[[],[],[],[],[],[],[]];
+if(!S.cPlan)S.cPlan=[];
+
+function save(){localStorage.setItem('spV7',JSON.stringify(S))}
+
+function sw(t){
+  ['setup','plan','log','dash','hist'].forEach((id,i)=>{
+    const elTab = document.querySelectorAll('.tab')[i];
+    const elSec = document.getElementById('sec-'+id);
+    if(elTab) elTab.classList.toggle('active',id===t);
+    if(elSec) elSec.classList.toggle('active',id===t);
+  });
+  if(t==='plan')rPlan();
+  if(t==='log')rLog();
+  if(t==='dash')rDash();
+  if(t==='hist')rHist();
+}
+
+function jsDay(d){
+  return (d.getDay()+6)%7;
+}
+
+function calcFinishDate(subjIdx, remHrs, wPlanOverride){
+  const plan = wPlanOverride || S.wPlan;
+  if(remHrs <= 0) return {date: null, done: true};
+  if(!S.startDate) return {date: null, done: false};
+
+  const hpd = new Array(7).fill(0);
+  plan.forEach((daySlots, di) => {
+    (daySlots||[]).forEach(sl => {
+      if(sl.si === subjIdx) hpd[di] += sl.hrs;
+    });
+  });
+
+  const hasAny = hpd.some(h=>h>0);
+  if(!hasAny) return {date: null, done: false};
+
+  const start = new Date(S.startDate+'T00:00:00');
+  let acc = 0;
+  let cur = new Date(start);
+  let guard = 0;
+
+  while(acc < remHrs && guard < 3650){
+    const dow = jsDay(cur);
+    acc += hpd[dow];
+    if(acc >= remHrs) break;
+    cur.setDate(cur.getDate()+1);
+    guard++;
+  }
+  return {date: new Date(cur), done: false};
+}
+
+function calcFinishDateCustom(subjIdx, remHrs){
+  if(remHrs <= 0) return {date: null, done: true};
+  if(!S.startDate) return {date: null, done: false};
+  const hpw = getHpwPerSubjCustom()[subjIdx];
+  if(!hpw) return {date: null, done: false};
+  const days = Math.ceil(remHrs / (hpw/7));
+  const d = new Date(S.startDate+'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return {date: d, done: false};
+}
+
+function getHpwPerSubjWeekly(){
+  const hpw = new Array(S.subjects.length).fill(0);
+  S.wPlan.forEach(day => (day||[]).forEach(sl => {
+    if(sl.si < hpw.length) hpw[sl.si] += sl.hrs;
+  }));
+  return hpw;
+}
+
+function getHpwPerSubjCustom(){
+  const hpw = new Array(S.subjects.length).fill(0);
+  S.cPlan.forEach(sl => { if(sl.si < hpw.length) hpw[sl.si] += sl.hrs; });
+  return hpw;
+}
+
+function getHpwPerSubj(){
+  return S.planMode==='W' ? getHpwPerSubjWeekly() : getHpwPerSubjCustom();
+}
+
+function getTotalHpw(){return getHpwPerSubj().reduce((a,x)=>a+x,0)}
+
+function calcPerSubj(){
+  const hpw = getHpwPerSubj();
+  return S.subjects.map((s,i) => {
+    const rem = Math.max(0, s.totalHrs - s.doneHrs);
+    const h = hpw[i];
+    let finResult;
+    if(S.planMode==='W'){
+      finResult = calcFinishDate(i, rem);
+    } else {
+      finResult = calcFinishDateCustom(i, rem);
+    }
+    return {name:s.name, totalHrs:s.totalHrs, doneHrs:s.doneHrs, rem, hpw:h, finDate:finResult.date, done:finResult.done, si:i};
+  });
+}
+
+function fmtTH(d){
+  if(!d) return '—';
+  return d.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+}
+
+function daysDiff(a, b){
+  if(!a||!b) return null;
+  return Math.round((b-a)/(1000*60*60*24));
+}
+
+function buildWarnings(perSubj){
+  const active = perSubj.filter(x => x.rem > 0 && x.hpw > 0 && x.finDate);
+  if(active.length < 2) return [];
+
+  active.sort((a,b) => a.finDate - b.finDate);
+  const earliest = active[0];
+
+  if(!S.startDate) return [];
+  const startD = new Date(S.startDate+'T00:00:00');
+
+  const latestFinDate = active[active.length-1].finDate;
+  const origDays = daysDiff(startD, latestFinDate);
+  const daysUntilEarliestFinish = daysDiff(startD, earliest.finDate);
+
+  let simSubjects = active.slice(1).map(x => {
+    const hrsProcessedBefore = (x.hpw / 7) * daysUntilEarliestFinish;
+    return {
+      si: x.si,
+      hpwOrig: x.hpw,
+      rem: Math.max(0, x.rem - hrsProcessedBefore)
+    };
+  });
+
+  const extraHpw = earliest.hpw;
+  let simDaysCount = daysUntilEarliestFinish;
+  let totalRemainingLater = simSubjects.reduce((sum, s) => sum + s.rem, 0);
+
+  if (totalRemainingLater > 0) {
+    while (totalRemainingLater > 0) {
+      simDaysCount++;
+      let currentActiveTotal = simSubjects.reduce((sum, s) => sum + s.rem, 0);
+      if (currentActiveTotal <= 0) break;
+
+      simSubjects.forEach(s => {
+        if (s.rem > 0) {
+          const newHpwForSubj = s.hpwOrig + (extraHpw * (s.rem / currentActiveTotal));
+          const hpdForSubj = newHpwForSubj / 7;
+          const progressToday = Math.min(hpdForSubj, s.rem);
+          s.rem -= progressToday;
+        }
+      });
+      totalRemainingLater = simSubjects.reduce((sum, s) => sum + s.rem, 0);
+      if (simDaysCount > 3650) break;
+    }
+  }
+
+  const newLatestDays = simDaysCount;
+  const savedDays = (origDays !== null && newLatestDays !== null) ? Math.max(0, origDays - newLatestDays) : 0;
+
+  const later = active.slice(1);
+  const laterNames = later.map(x => {
+    const cl=cc(x.si);
+    return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span>`;
+  }).join(' ');
+
+  return [{date:earliest.finDate, subj:earliest, laterNames, extraHpw, savedDays}];
+}
+
+function renderWarnings(warns, el){
+  if(!el) return;
+  if(!warns.length){el.style.display='none';return;}
+  el.style.display='block';
+  let html='<div style="font-size:12px;font-weight:600;color:#412402;margin-bottom:8px"><i class="ti ti-alert-triangle" aria-hidden="true"></i> รายงานวิเคราะห์ไทม์ไลน์ — วิชาที่จะเรียนจบก่อน</div>';
+  warns.forEach(w=>{
+    const cl=cc(w.subj.si);
+    html+=`<div class="warn-box"><span class="chip" style="background:${cl.bg};color:${cl.tx}">${w.subj.name}</span> จะเรียนจบครบตามเป้าหมายก่อนวิชาอื่นในวันที่ <b>${fmtTH(w.date)}</b><br>ส่งผลให้เกิดเวลาว่างในแผนการเรียน: <b>${w.extraHpw.toFixed(1)} ชม./สัปดาห์</b></div>`;
+  });
+  html+=`<div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i> <b>คำแนะนำเชิงกลยุทธ์:</b> เมื่อถึงวันดังกล่าว ให้นำเวลา <b>${warns[0].extraHpw.toFixed(1)} ชม./สัปดาห์</b> ที่ว่างไปเกลี่ยเพิ่มให้กลุ่มวิชา ${warns[0].laterNames} ตามสัดส่วนปริมาณงานที่เหลืออยู่ ซึ่งลอจิกจำลองพบว่าจะช่วยให้เรียนจบหลักสูตรรวมเร็วขึ้นประมาณ <b>${warns[0].savedDays} วัน</b> ครับ</div>`;
+  el.innerHTML=html;
+}
+
+function genSubj(){
+  const n=+document.getElementById('nSubj').value||0;
+  if(!n)return;
+  const c=document.getElementById('subjList');c.innerHTML='';
+  for(let i=0;i<n;i++){
+    const ex=S.subjects[i]||{};const cl=cc(i);
+    const d=document.createElement('div');d.className='si';
+    d.innerHTML=`<div class="sn" style="background:${cl.bg};color:${cl.tx}">${i+1}</div>
+      <input type="text" id="sn${i}" value="${ex.name||''}" placeholder="ชื่อวิชา" style="margin-bottom:0"/>
+      <input type="number" id="sh${i}" value="${ex.totalHrs||2}" min="0.5" step="0.5" style="margin-bottom:0" oninput="updTot()"/>`;
+    c.appendChild(d);
+  }
+  document.getElementById('subjSec').style.display='block';
+  updTot();
+}
+
+function updTot(){
+  let t=0;document.querySelectorAll('[id^="sh"]').forEach(x=>t+=+x.value||0);
+  const tBox = document.getElementById('tHrsBox');
+  const tLbl = document.getElementById('tHrsLbl');
+  if(tBox) tBox.style.display=t>0?'block':'none';
+  if(tLbl) tLbl.textContent=t.toFixed(1)+' ชม.';
+}
+
+function saveSetup(){
+  const n=+document.getElementById('nSubj').value||0;
+  const ns=[];
+  for(let i=0;i<n;i++){
+    const nameVal = document.getElementById('sn'+i).value;
+    const old=S.subjects.find(x=>x.name===nameVal);
+    ns.push({
+      name:nameVal||('วิชาที่'+(i+1)),
+      totalHrs:+document.getElementById('sh'+i).value||0,
+      doneHrs:old?old.doneHrs:0
+    });
+  }
+  S.goalName=document.getElementById('gName').value||'เป้าหมาย';
+  S.subjects=ns;
+  S.startDate=document.getElementById('sDate').value;
+  save();alert('บันทึกการตั้งค่ารายวิชาเรียบร้อยครับ!');sw('plan');
+}
+
+function setMode(m){
+  S.planMode=m;
+  const mW = document.getElementById('mW');
+  const mC = document.getElementById('mC');
+  if(mW) mW.classList.toggle('on',m==='W');
+  if(mC) mC.classList.toggle('on',m==='C');
+  document.getElementById('pWeekly').style.display=m==='W'?'block':'none';
+  document.getElementById('pCustom').style.display=m==='C'?'block':'none';
+}
+
+function rPlan(){
+  const has=S.subjects.length>0;
+  const noPlan = document.getElementById('noPlan');
+  const planCnt = document.getElementById('planCnt');
+  if(noPlan) noPlan.style.display=has?'none':'block';
+  if(planCnt) planCnt.style.display=has?'block':'none';
+  if(!has)return;
+  setMode(S.planMode||'W');
+  rWkGrid();rCSlots();rPlanRes();
+}
+
+function rWkGrid(){
+  const g=document.getElementById('wGrid');if(!g)return;g.innerHTML='';
+  document.getElementById('wkEdit').style.display='none';
+  DAYS_TH.forEach((d,di)=>{
+    const col=document.createElement('div');col.className='dc';
+    let h=`<div class="dh">${d}</div>`;
+    (S.wPlan[di]||[]).forEach((sl,si)=>{
+      const nm=S.subjects[sl.si]?S.subjects[sl.si].name:'?';
+      const short=nm.length>5?nm.slice(0,5)+'…':nm;
+      const cl=cc(sl.si);
+      h+=`<div class="ds" onclick="openWkEdit(${di},${si})" title="${nm}" style="background:${cl.bg};border-color:${cl.bg};color:${cl.tx}">${short}<br><span style="opacity:.8;font-size:10px">${sl.hrs}ชม.</span></div>`;
+    });
+    h+=`<div class="ds da" onclick="addWkSlot(${di})">+</div>`;
+    const tot=(S.wPlan[di]||[]).reduce((a,x)=>a+x.hrs,0);
+    if(tot>0)h+=`<div class="dt">${tot.toFixed(1)}ชม.</div>`;
+    col.innerHTML=h;g.appendChild(col);
+  });
+  rWkSum();
+}
+
+function addWkSlot(di){
+  if(!S.wPlan[di])S.wPlan[di]=[];
+  S.wPlan[di].push({si:0,hrs:1});
+  openWkEdit(di,S.wPlan[di].length-1);
+}
+
+function openWkEdit(di,si){
+  const ed=document.getElementById('wkEdit');ed.style.display='block';
+  const sl=S.wPlan[di][si];
+  const opts=S.subjects.map((s,i)=>`<option value="${i}" ${i===sl.si?'selected':''}>${s.name}</option>`).join('');
+  ed.innerHTML=`<div class="se">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:10px"><i class="ti ti-edit" aria-hidden="true"></i> แก้ไขตารางเรียน — วัน${DAYS_FULL[di]}</div>
+    <div style="display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:10px">
+      <div><lbl>วิชา</lbl><select id="eSubj" style="margin-bottom:0">${opts}</select></div>
+      <div><lbl>ชม./วัน</lbl><input type="number" id="eHrs" value="${sl.hrs}" min="0.5" step="0.5" style="margin-bottom:0"/></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="saveWkSlot(${di},${si})" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97"><i class="ti ti-check" aria-hidden="true"></i> บันทึก</button>
+      <button onclick="delWkSlot(${di},${si})" style="color:var(--color-text-danger)"><i class="ti ti-trash" aria-hidden="true"></i> ลบ</button>
+      <button onclick="document.getElementById('wkEdit').style.display='none'">ยกเลิก</button>
+    </div>
+  </div>`;
+}
+
+function saveWkSlot(di,si){
+  S.wPlan[di][si]={si:+document.getElementById('eSubj').value,hrs:+document.getElementById('eHrs').value||0.5};
+  document.getElementById('wkEdit').style.display='none';
+  save();rWkGrid();rPlanRes();
+}
+
+function delWkSlot(di,si){
+  S.wPlan[di].splice(si,1);
+  document.getElementById('wkEdit').style.display='none';
+  save();rWkGrid();rPlanRes();
+}
+
+function rWkSum(){
+  let tot=0;const lines=[];
+  S.subjects.forEach((s,si)=>{
+    let w=0;S.wPlan.forEach(d=>(d||[]).forEach(sl=>{if(sl.si===si)w+=sl.hrs}));
+    if(w>0){
+      const cl=cc(si);
+      lines.push(`<span class="chip" style="background:${cl.bg};color:${cl.tx}">${s.name}</span> ${w.toFixed(1)} ชม./สัปดาห์`);
+      tot+=w;
+    }
+  });
+  const box=document.getElementById('wkSum');if(!box)return;
+  box.style.display=tot>0?'block':'none';
+  if(tot>0)box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>ภาระงานรวม: ${tot.toFixed(1)} ชม./สัปดาห์</b></div></div>`;
+}
+
+function addCSlot(){S.cPlan.push({si:0,label:'',hrs:1});rCSlots()}
+
+function rCSlots(){
+  const c=document.getElementById('cSlots');if(!c)return;c.innerHTML='';
+  if(!S.cPlan.length){
+    c.innerHTML='<div style="font-size:13px;color:var(--color-text-tertiary);padding:6px 0">ยังไม่มีช่วงเรียนที่ระบุอิสระ — กรุณากด "เพิ่มช่วงเรียน"</div>';
+    rCSum();return;
+  }
+  S.cPlan.forEach((sl,i)=>{
+    const opts=S.subjects.map((s,si)=>`<option value="${si}" ${si===sl.si?'selected':''}>${s.name}</option>`).join('');
+    const d=document.createElement('div');
+    d.style.cssText='display:grid;grid-template-columns:1fr 90px 50px;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);align-items:center';
+    d.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <select onchange="S.cPlan[${i}].si=+this.value;rCSum()" style="margin-bottom:0;font-size:12px">${opts}</select>
+        <input type="text" placeholder="เช่น จ-พ เช้า" value="${sl.label||''}" oninput="S.cPlan[${i}].label=this.value" style="margin-bottom:0;font-size:12px"/>
+      </div>
+      <input type="number" value="${sl.hrs}" min="0.5" step="0.5" oninput="S.cPlan[${i}].hrs=+this.value||0;rCSum()" style="margin-bottom:0;font-size:12px"/>
+      <button onclick="S.cPlan.splice(${i},1);rCSlots()" style="padding:4px 8px;font-size:12px;color:var(--color-text-danger)"><i class="ti ti-x" aria-hidden="true"></i></button>`;
+    c.appendChild(d);
+  });
+  rCSum();
+}
+
+function rCSum(){
+  let tot=0;const map={};const siMap={};
+  S.cPlan.forEach(sl=>{
+    const nm=S.subjects[sl.si]?S.subjects[sl.si].name:'?';
+    map[nm]=(map[nm]||0)+sl.hrs;siMap[nm]=sl.si;tot+=sl.hrs;
+  });
+  const box=document.getElementById('cSum');if(!box)return;
+  box.style.display=tot>0?'block':'none';
+  if(tot>0){
+    const lines=Object.entries(map).map(([k,v])=>{const cl=cc(siMap[k]);return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${k}</span> ${v.toFixed(1)} ชม.`;});
+    box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>ภาระงานรวม: ${tot.toFixed(1)} ชม./สัปดาห์</b></div></div>`;
+  }
+}
+
+function savePlan(){save();rPlanRes();document.getElementById('planResCard').style.display='block';alert('บันทึกแผนการเรียนเรียบร้อยแล้วครับ!')}
+
+function rPlanRes(){
+  const perSubj=calcPerSubj();
+  const active=perSubj.filter(x=>x.rem>0&&x.hpw>0&&x.finDate);
+  const allFinDate=active.length?active.reduce((a,x)=>x.finDate>a?x.finDate:a,active[0].finDate):null;
+  const hpw=getTotalHpw();
+  const modeLabel=S.planMode==='W'?'แผนรายสัปดาห์':'แผนกำหนดเองอิสระ';
+  const startD=S.startDate?new Date(S.startDate+'T00:00:00'):null;
+  
+  const lblMode = document.getElementById('planResModeLbl');
+  if(lblMode) lblMode.textContent='กำลังใช้: '+modeLabel;
+  
+  const pr=document.getElementById('planRes');
+  if(hpw>0){
+    document.getElementById('planResCard').style.display='block';
+    const lines=perSubj.map(x=>{
+      const cl=cc(x.si);
+      let status;
+      if(x.rem===0){status='<span style="color:#3B6D11; font-weight:600">✓ เรียนครบชั่วโมงแล้ว</span>';}
+      else if(x.hpw>0&&x.finDate){
+        const d=startD?daysDiff(startD,x.finDate):null;
+        status=`→ เรียนจบวันที่ <b>${fmtTH(x.finDate)}</b> ${d!==null?` (${d} วัน)`:''}`;
+      } else {status='<span style="color:var(--color-text-danger)">ยังไม่ได้จัดวิชานี้ลงแผน</span>';}
+      return `<div style="margin-bottom:4px;"><span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span> เหลือ <b>${x.rem.toFixed(1)} ชม.</b> · จัดไว้ ${x.hpw.toFixed(1)} ชม./สัปดาห์ ${status}</div>`;
+    });
+    if(pr) pr.innerHTML=`<div class="rb">${lines.join('')}<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary); color: var(--color-primary); font-weight:600"><i class="ti ti-flag" aria-hidden="true"></i> วันที่คาดว่าจะเรียนครบทุกวิชา (แผนปกติ): <b>${fmtTH(allFinDate)}</b></div></div>`;
+    renderWarnings(buildWarnings(perSubj),document.getElementById('planWarnBox'));
+  } else {
+    document.getElementById('planResCard').style.display='none';
+  }
+}
+
+function rLog(){
+  const has=S.subjects.length>0;
+  const noLog = document.getElementById('noLog');
+  const logFrm = document.getElementById('logFrm');
+  if(noLog) noLog.style.display=has?'none':'block';
+  if(logFrm) logFrm.style.display=has?'block':'none';
+  if(!has)return;
+  document.getElementById('lDate').value=new Date().toISOString().slice(0,10);
+  const c=document.getElementById('lSubjs');if(!c)return;c.innerHTML='';
+  S.subjects.forEach((s,i)=>{
+    const rem=Math.max(0,s.totalHrs-s.doneHrs);
+    const cl=cc(i);
+    const d=document.createElement('div');d.className='ts';
+    d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="chip" style="background:${cl.bg};color:${cl.tx}">${s.name}</span>
+        <span style="font-size:11px;color:var(--color-text-secondary)">ความคืบหน้า: เรียนแล้ว ${s.doneHrs.toFixed(1)} จากเป้าหมาย ${s.totalHrs} ชม. (คงเหลือ ${rem.toFixed(1)} ชม.)</span>
+      </div>
+      <div class="tr" style="margin-top:6px"><lbl>บันทึกเวลาที่เรียนวันนี้ (ชม.)</lbl><input type="number" id="li${i}" min="0" step="0.5" value="0" oninput="updLTot()" style="width:70px;margin:0"/></div>`;
+    c.appendChild(d);
+  });
+  document.getElementById('lTotBox').style.display='none';
+}
+
+function updLTot(){
+  let t=0;S.subjects.forEach((_,i)=>{
+    const el = document.getElementById('li'+i);
+    if(el) t+=+el.value||0;
+  });
+  const tBox = document.getElementById('lTotBox');
+  const tLbl = document.getElementById('lTotLbl');
+  if(tBox) tBox.style.display=t>0?'block':'none';
+  if(tLbl) tLbl.textContent=t.toFixed(1);
+}
+
+function saveLog(){
+  const date=document.getElementById('lDate').value;
+  if(!date){alert('กรุณาระบุวันที่ทำการบันทึกข้อมูลครับ');return}
+  const ents=[];let tot=0;
+  S.subjects.forEach((s,i)=>{
+    const el = document.getElementById('li'+i);
+    const h=el?+el.value||0:0;
+    if(h>0){ents.push({si:i,name:s.name,hrs:h});s.doneHrs+=h;tot+=h;}
+  });
+  if(!ents.length){alert('กรุณาใส่เวลาเรียนอย่างน้อย 1 รายวิชาเพื่อบันทึกครับ');return}
+  S.logs.push({date,ents,tot});save();alert(`บันทึกชั่วโมงการศึกษาสำเร็จ! รวมทั้งหมด ${tot.toFixed(1)} ชม.`);sw('dash');
+}
+
+function rDash(){
+  const has=S.subjects.length>0;
+  const noDash = document.getElementById('noDash');
+  const dashCnt = document.getElementById('dashCnt');
+  if(noDash) noDash.style.display=has?'none':'block';
+  if(dashCnt) dashCnt.style.display=has?'block':'none';
+  if(!has)return;
+  const tgt=S.subjects.reduce((a,s)=>a+s.totalHrs,0);
+  const done=S.subjects.reduce((a,s)=>a+s.doneHrs,0);
+  const pct=tgt>0?Math.round(done/tgt*100):0;
+  const perSubj=calcPerSubj();
+  const active=perSubj.filter(x=>x.rem>0&&x.hpw>0&&x.finDate);
+  const allFinDate=active.length?active.reduce((a,x)=>x.finDate>a?x.finDate:a,active[0].finDate):null;
+  const startD=S.startDate?new Date(S.startDate+'T00:00:00'):null;
+  const daysLeft=allFinDate?daysDiff(new Date(),allFinDate):0;
+  const allDone=S.subjects.every(s=>s.doneHrs>=s.totalHrs);
+  const endStr=allDone?'เรียนครบทุกวิชาแล้ว':fmtTH(allFinDate);
+  const modeLabel=S.planMode==='W'?'แผนรายสัปดาห์':'แผนกำหนดเองอิสระ';
+  
+  const lblMode = document.getElementById('dashPlanModeLbl');
+  if(lblMode) lblMode.textContent='กำลังใช้: '+modeLabel;
+
+  const mGrid = document.getElementById('mGrid');
+  if(mGrid) {
+    mGrid.innerHTML=`
+      <div class="mt"><div class="ml">เป้าหมาย</div><div class="mv" style="font-size:13px;margin-top:4px;line-height:1.3;word-break:break-word;">${S.goalName||'-'}</div></div>
+      <div class="mt"><div class="ml">ความคืบหน้า</div><div class="mv">${pct}%</div><div class="ms">${done.toFixed(1)} / ${tgt} ชม.</div></div>
+      <div class="mt"><div class="ml">วันที่เหลือ</div><div class="mv" style="color:${allDone?'#16a34a':'var(--color-primary)'}">${allDone?'✓':Math.max(0,daysLeft)}</div><div class="ms">${allDone?'เรียนครบแล้ว':'วันคงเหลือ'}</div></div>
+      <div class="mt"><div class="ml">เรียนครบวันที่</div><div class="mv" style="font-size:11.5px;margin-top:4px;line-height:1.3">${endStr}</div></div>`;
+  }
+
+  const pc=document.getElementById('subjProg');if(pc) {
+    pc.innerHTML='';
+    S.subjects.forEach((s,i)=>{
+      const p=s.totalHrs>0?Math.min(100,Math.round(s.doneHrs/s.totalHrs*100)):0;
+      const dn=s.doneHrs>=s.totalHrs;const cl=cc(i);
+      const d=document.createElement('div');d.className='pr';
+      d.innerHTML=`<div style="width:110px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--color-text-primary)" title="${s.name}">${s.name}</div>
+        <div class="pb"><div class="pf" style="width:${p}%;background:${dn?'#16a34a':cl.tx}"></div></div>
+        <div style="font-size:11px;color:var(--color-text-secondary);width:76px;text-align:right">${s.doneHrs.toFixed(1)}/${s.totalHrs}ชม.</div>
+        <span class="bdg" style="background:${cl.bg};color:${cl.tx}">${p}%</span>`;
+      pc.appendChild(d);
+    });
+  }
+
+  const hpwTotal=getTotalHpw();
+  const hpd=hpwTotal>0?(hpwTotal/7).toFixed(1):'-';
+  const lines=perSubj.map(x=>{
+    const cl=cc(x.si);
+    let status;
+    if(x.rem===0){status='<span style="color:#16a34a; font-weight:600">✓ ครบแล้ว</span>';}
+    else if(x.hpw>0&&x.finDate){status=`→ วันที่ <b>${fmtTH(x.finDate)}</b>`;}
+    else{status='<span style="color:var(--color-text-danger)">ไม่มีตารางเรียน</span>';}
+    return `<div style="margin-bottom:3px;"><span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span> เหลือ <b>${x.rem.toFixed(1)} ชม.</b> ${status}</div>`;
+  });
+  
+  const elUpd = document.getElementById('updPlan');
+  if(elUpd) elUpd.innerHTML=`<div class="rb">${lines.join('')}<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary)">ตารางแผนรวม: <b>${hpwTotal.toFixed(1)} ชม./สัปดาห์</b> (~เฉลี่ยวันละ ${hpd} ชม.) · เรียนจบหลักสูตรวันที่ <b>${endStr}</b></div></div>`;
+  renderWarnings(buildWarnings(perSubj),document.getElementById('dashWarnBox'));
+}
+
+function rHist(){
+  const c=document.getElementById('histList');if(!c)return;
+  if(!S.logs.length){c.innerHTML='<div class="emp">ยังไม่มีรายการบันทึกเวลาการเรียนในระบบครับ</div>';return}
+  c.innerHTML='';
+  [...S.logs].reverse().forEach((log,ri)=>{
+    const i=S.logs.length-1-ri;
+    const d=document.createElement('div');d.className='le';
+    const chips=log.ents.map(e=>{const cl=cc(e.si);return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${e.name} ${e.hrs}ชม.</span>`;}).join('');
+    d.innerHTML=`<div>
+      <div style="font-weight:600;color:var(--color-text-primary);margin-bottom:4px">${fmtD(log.date)} — บันทึกรวมทั้งสิ้น ${log.tot.toFixed(1)} ชม.</div>
+      <div>${chips}</div>
+    </div><button class="db" onclick="delLog(${i})"><i class="ti ti-trash"></i> ลบ</button>`;
+    c.appendChild(d);
+  });
+}
+
+function fmtD(ds){const d=new Date(ds+'T00:00:00');return d.toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'})}
+
+function delLog(i){
+  if(!confirm('ยืนยันที่จะลบรายการประวัติการบันทึกชั่วโมงศึกษานี้ใช่ไหมครับ? (ระบบจะหักชั่วโมงเรียนสะสมออกด้วย)'))return;
+  S.logs[i].ents.forEach(e=>{
+    if(S.subjects[e.si]) {
+      S.subjects[e.si].doneHrs=Math.max(0,S.subjects[e.si].doneHrs-e.hrs);
+    }
+  });
+  S.logs.splice(i,1);save();rHist();
+}
+
+function clrHist(){
+  if(!confirm('คำเตือน! คุณต้องการล้างข้อมูลประวัติและรีเซ็ตชั่วโมงที่เรียนสะสมของทุกวิชากลับเป็น 0 ใช่หรือไม่ครับ?'))return;
+  S.logs=[];S.subjects.forEach(s=>s.doneHrs=0);save();rHist();
+}
+
+// เรียกให้ทำงานทันทีหลังโหลด Element เสร็จ
+window.addEventListener('DOMContentLoaded', (event) => {
+  if(S.goalName) {
+    const elG = document.getElementById('gName');
+    if(elG) elG.value=S.goalName;
+  }
+  if(S.subjects.length) {
+    const elN = document.getElementById('nSubj');
+    if(elN) elN.value=S.subjects.length;
+  }
+  const today=new Date().toISOString().slice(0,10);
+  const elSDate = document.getElementById('sDate');
+  const elLDate = document.getElementById('lDate');
+  if(elSDate) elSDate.value=S.startDate||today;
+  if(elLDate) elLDate.value=today;
+  if(S.subjects.length) genSubj();
+});
+</script>
+</body>
+</html>
