@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MedPlanner">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link class="apple-touch-icon" href="icon-192.png">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
@@ -45,7 +45,7 @@ body { background: #f1f5f9; color: var(--color-text-primary); padding: 0 10px; }
 @media (max-width: 480px) { .mg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .mt { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: .875rem .75rem; text-align: center; border: 0.5px solid var(--color-border-tertiary); }
 .ml { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 5px; }
-.mv { font-size: 18px; font-weight: 600; color: var(--color-text-primary); line-height: 1; }
+.mv { font-size: 16px; font-weight: 600; color: var(--color-text-primary); line-height: 1.2; }
 .ms { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
 lbl { font-size: 13px; color: var(--color-text-secondary); display: block; margin-bottom: 4px; font-weight: 500; }
 input[type=text], input[type=number], input[type=date], select { width: 100%; margin-bottom: 12px; padding: 8px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); font-size: 13px; color: var(--color-text-primary); outline: none; }
@@ -85,9 +85,16 @@ button:active { background: #edf2f7; }
 .mb.on { background: #E6F1FB; color: #0C447C; border-color: #B5D4F4; font-weight: 600; }
 .se { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; margin-top: 8px; border: 0.5px solid var(--color-border-secondary); }
 .chip { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-right: 3px; }
-.warn-box { border-left: 3px solid #EF9F27; border-radius: 0; background: #FAEEDA; color: #412402; padding: 10px 14px; margin-bottom: 6px; font-size: 12px; line-height: 1.7; }
-.tip-box { font-size: 12px; color: #412402; margin-top: 6px; padding: 9px 12px; background: #FFF8F0; border-radius: var(--border-radius-md); border: 0.5px solid #FAC775; line-height: 1.7; }
+.warn-box { border-left: 3px solid #16a34a; border-radius: 0; background: #f0fdf4; color: #14532d; padding: 10px 14px; margin-bottom: 6px; font-size: 12px; line-height: 1.7; }
+.tip-box { font-size: 12px; color: #1e3a8a; margin-top: 6px; padding: 9px 12px; background: #eff6ff; border-radius: var(--border-radius-md); border: 0.5px solid #bfdbfe; line-height: 1.7; }
 .tip-box b { font-weight: 600; }
+
+.comp-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12.5px; }
+.comp-table th { background: var(--color-background-secondary); text-align: left; padding: 8px; font-weight: 600; border-bottom: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+.comp-table td { padding: 10px 8px; border-bottom: 0.5px solid var(--color-border-secondary); vertical-align: middle; }
+.comp-table tr:last-child td { border-bottom: none; }
+.txt-green { color: #16a34a; font-weight: 600; }
+.txt-blue { color: var(--color-primary); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -95,14 +102,14 @@ button:active { background: #edf2f7; }
 <h2 class="sr-only">โปรแกรมวางแผนและติดตามการเรียน</h2>
 <div class="app">
 <div class="tab-bar">
-  <button class="tab active" onclick="sw('setup')"><i class="ti ti-settings" aria-hidden="true"></i> ตั้งค่า</button>
+  <button class="tab" onclick="sw('setup')"><i class="ti ti-settings" aria-hidden="true"></i> ตั้งค่า</button>
   <button class="tab" onclick="sw('plan')"><i class="ti ti-calendar-week" aria-hidden="true"></i> แผนเรียน</button>
   <button class="tab" onclick="sw('log')"><i class="ti ti-pencil" aria-hidden="true"></i> บันทึก</button>
-  <button class="tab" onclick="sw('dash')"><i class="ti ti-chart-bar" aria-hidden="true"></i> Dashboard</button>
+  <button class="tab active" onclick="sw('dash')"><i class="ti ti-chart-bar" aria-hidden="true"></i> Dashboard</button>
   <button class="tab" onclick="sw('hist')"><i class="ti ti-history" aria-hidden="true"></i> ประวัติ</button>
 </div>
 
-<div class="sec active" id="sec-setup">
+<div class="sec" id="sec-setup">
   <div class="card">
     <div class="card-header">
       <div class="card-icon" style="background:#E6F1FB;color:#0C447C"><i class="ti ti-target" aria-hidden="true"></i></div>
@@ -170,7 +177,7 @@ button:active { background: #edf2f7; }
     <div class="card" id="planResCard" style="display:none">
       <div class="card-header">
         <div class="card-icon" style="background:#EAF3DE;color:#27500A"><i class="ti ti-chart-pie" aria-hidden="true"></i></div>
-        <div><div class="card-title">สรุปแผนการเรียน</div><div class="card-sub" id="planResModeLbl">—</div></div>
+        <div><div class="card-title">สรุปแผนการเปรียบเทียบไทม์ไลน์</div><div class="card-sub" id="planResModeLbl">—</div></div>
       </div>
       <div id="planRes"></div>
       <div id="planWarnBox" style="margin-top:10px;display:none"></div>
@@ -195,7 +202,7 @@ button:active { background: #edf2f7; }
   </div>
 </div>
 
-<div class="sec" id="sec-dash">
+<div class="sec active" id="sec-dash">
   <div class="emp" id="noDash" style="display:none"><i class="ti ti-alert-circle" style="font-size:20px" aria-hidden="true"></i><br>กรุณาตั้งค่าก่อน</div>
   <div id="dashCnt">
     <div class="mg" id="mGrid"></div>
@@ -206,10 +213,19 @@ button:active { background: #edf2f7; }
       </div>
       <div id="subjProg"></div>
     </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#EEEDFE;color:#3C3489"><i class="ti ti-git-compare" aria-hidden="true"></i></div>
+        <div><div class="card-title">ตารางเปรียบเทียบวันเรียนจบ (แยกตามเงื่อนไขการเกลี่ยเวลา)</div><div class="card-sub">วิเคราะห์เปรียบเทียบแบบ Dual-Track Engine</div></div>
+      </div>
+      <div id="comparisonContainer"></div>
+    </div>
+
     <div class="card">
       <div class="card-header">
         <div class="card-icon" style="background:#EEEDFE;color:#3C3489"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
-        <div><div class="card-title">แผนที่อัปเดต</div><div class="card-sub" id="dashPlanModeLbl">—</div></div>
+        <div><div class="card-title">สถานะรายละเอียดแผนจำลองแบบ Rolling</div><div class="card-sub" id="dashPlanModeLbl">—</div></div>
       </div>
       <div id="updPlan"></div>
       <div id="dashWarnBox" style="margin-top:10px;display:none"></div>
@@ -265,161 +281,338 @@ function jsDay(d){
   return (d.getDay()+6)%7;
 }
 
-function calcFinishDate(subjIdx, remHrs, wPlanOverride){
-  const plan = wPlanOverride || S.wPlan;
-  if(remHrs <= 0) return {date: null, done: true};
-  if(!S.startDate) return {date: null, done: false};
-
-  const hpd = new Array(7).fill(0);
-  plan.forEach((daySlots, di) => {
-    (daySlots||[]).forEach(sl => {
-      if(sl.si === subjIdx) hpd[di] += sl.hrs;
+function getActualLogsMap(){
+  const logMap = {};
+  S.logs.forEach(l => {
+    if(!logMap[l.date]) logMap[l.date] = {};
+    l.ents.forEach(e => {
+      logMap[l.date][e.si] = (logMap[l.date][e.si] || 0) + e.hrs;
     });
   });
+  return logMap;
+}
 
-  const hasAny = hpd.some(h=>h>0);
-  if(!hasAny) return {date: null, done: false};
+function runSimulationTrack(withTransfer) {
+  const n = S.subjects.length;
+  const results = Array.from({ length: n }, (_, i) => ({
+    si: i, name: S.subjects[i].name, totalHrs: S.subjects[i].totalHrs,
+    finDate: null, done: false
+  }));
 
-  const start = new Date(S.startDate+'T00:00:00');
-  let acc = 0;
+  if (n === 0 || !S.startDate) return results;
+
+  const baseHpd = Array.from({ length: 7 }, () => new Array(n).fill(0));
+  if (S.planMode === 'W') {
+    S.wPlan.forEach((daySlots, di) => {
+      (daySlots || []).forEach(sl => { if (sl.si < n) baseHpd[di][sl.si] += sl.hrs; });
+    });
+  } else {
+    const hpw = new Array(n).fill(0);
+    S.cPlan.forEach(sl => { if (sl.si < n) hpw[sl.si] += sl.hrs; });
+    for (let di = 0; di < 7; di++) {
+      for (let i = 0; i < n; i++) baseHpd[di][i] = hpw[i] / 7;
+    }
+  }
+
+  const logMap = getActualLogsMap();
+  const start = new Date(S.startDate + 'T00:00:00');
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  const accHrs = new Array(n).fill(0);
   let cur = new Date(start);
   let guard = 0;
 
-  while(acc < remHrs && guard < 3650){
+  // ปรับให้ดึงวันที่ปัจจุบัน (Local Time) ตรงๆ ป้องกันปัญหา Timezone ชิฟต์ไป 7 ชั่วโมง
+  const todY = today.getFullYear();
+  const todM = String(today.getMonth() + 1).padStart(2, '0');
+  const todD = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${todY}-${todM}-${todD}`;
+
+  while (guard < 5000) {
+    let allDone = true;
+    for (let i = 0; i < n; i++) {
+      if (accHrs[i] < results[i].totalHrs) allDone = false;
+    }
+    if (allDone) break;
+
+    const curY = cur.getFullYear();
+    const curM = String(cur.getMonth() + 1).padStart(2, '0');
+    const curD = String(cur.getDate()).padStart(2, '0');
+    const dateStr = `${curY}-${curM}-${curD}`;
     const dow = jsDay(cur);
-    acc += hpd[dow];
-    if(acc >= remHrs) break;
-    cur.setDate(cur.getDate()+1);
+    
+    // FIXED: ลอจิกตรวจสอบสถานะ Log ใหม่ 
+    // หากมี Log จริงในวันนั้นๆ ให้ยึด Log เป็นหลักเสมอ ไม่ว่าจะเป็นวันนี้ หรืออนาคตที่ลงล่วงหน้า
+    // หากไม่มี Log แต่เป็นอดีต (เลยวันนี้ไปแล้ว) ให้มองว่าเป็นวันขาด (0 ชม.)
+    let isHistoricalLog = false;
+    if (logMap[dateStr]) {
+      isHistoricalLog = true;
+    } else if (dateStr < todayStr) {
+      isHistoricalLog = true;
+    }
+
+    const finalAlloc = new Array(n).fill(0);
+    let surplusPool = 0;
+
+    if (isHistoricalLog) {
+      for (let i = 0; i < n; i++) {
+        const loggedHrs = (logMap[dateStr] && logMap[dateStr][i]) ? logMap[dateStr][i] : 0;
+        if (loggedHrs > 0) {
+          if (accHrs[i] >= results[i].totalHrs && withTransfer) {
+            surplusPool += loggedHrs;
+          } else {
+            finalAlloc[i] = loggedHrs;
+          }
+        }
+      }
+    } else {
+      // เมื่อไม่มี Log ของวันนี้หรืออนาคต ระบบจะดึงแผนตั้งต้น (Base Plan) มาใช้วิเคราะห์แทน
+      for (let i = 0; i < n; i++) {
+        const baseHrs = baseHpd[dow][i];
+        if (baseHrs > 0) {
+          if (accHrs[i] < results[i].totalHrs) {
+            finalAlloc[i] = baseHrs;
+          } else if (withTransfer) {
+            surplusPool += baseHrs;
+          }
+        }
+      }
+    }
+
+    if (withTransfer && surplusPool > 0) {
+      let activeReceivers = [];
+      
+      for (let i = 0; i < n; i++) {
+        if (accHrs[i] < results[i].totalHrs && baseHpd[dow][i] > 0) {
+          activeReceivers.push(i);
+        }
+      }
+
+      if (activeReceivers.length === 0) {
+        for (let i = 0; i < n; i++) {
+          if (accHrs[i] < results[i].totalHrs) {
+            activeReceivers.push(i);
+          }
+        }
+      }
+
+      if (activeReceivers.length > 0) {
+        const share = surplusPool / activeReceivers.length;
+        activeReceivers.forEach(idx => { finalAlloc[idx] += share; });
+      }
+    }
+
+    for (let i = 0; i < n; i++) {
+      if (finalAlloc[i] > 0 && accHrs[i] < results[i].totalHrs) {
+        const remRequired = results[i].totalHrs - accHrs[i];
+        const actualGain = Math.min(finalAlloc[i], remRequired);
+
+        accHrs[i] += actualGain;
+
+        if (accHrs[i] >= results[i].totalHrs) {
+          results[i].finDate = new Date(cur);
+          results[i].done = true;
+          
+          if (withTransfer && finalAlloc[i] > actualGain) {
+            let residual = finalAlloc[i] - actualGain;
+            for (let j = 0; j < n; j++) {
+              if (accHrs[j] < results[j].totalHrs && residual > 0) {
+                const nextRem = results[j].totalHrs - accHrs[j];
+                const nextGain = Math.min(residual, nextRem);
+                accHrs[j] += nextGain;
+                residual -= nextGain;
+                if (accHrs[j] >= results[j].totalHrs) {
+                  results[j].finDate = new Date(cur);
+                  results[j].done = true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    cur.setDate(cur.getDate() + 1);
     guard++;
   }
-  return {date: new Date(cur), done: false};
+
+  return results;
 }
 
-function calcFinishDateCustom(subjIdx, remHrs){
-  if(remHrs <= 0) return {date: null, done: true};
-  if(!S.startDate) return {date: null, done: false};
-  const hpw = getHpwPerSubjCustom()[subjIdx];
-  if(!hpw) return {date: null, done: false};
-  const days = Math.ceil(remHrs / (hpw/7));
-  const d = new Date(S.startDate+'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return {date: d, done: false};
-}
+function calcDualTrackTimeline(){
+  const trackNormal = runSimulationTrack(false);  
+  const trackTransfer = runSimulationTrack(true); 
 
-function getHpwPerSubjWeekly(){
-  const hpw = new Array(S.subjects.length).fill(0);
-  S.wPlan.forEach(day => (day||[]).forEach(sl => {
-    if(sl.si < hpw.length) hpw[sl.si] += sl.hrs;
-  }));
-  return hpw;
-}
+  return S.subjects.map((s, i) => {
+    const hpw = S.planMode === 'W' ? 
+      S.wPlan.reduce((acc, day) => acc + (day || []).reduce((sum, sl) => sl.si === i ? sum + sl.hrs : sum, 0), 0) :
+      S.cPlan.reduce((acc, sl) => sl.si === i ? acc + sl.hrs : acc, 0);
+    
+    const tn = trackNormal.find(x => x.si === i);
+    const tt = trackTransfer.find(x => x.si === i);
 
-function getHpwPerSubjCustom(){
-  const hpw = new Array(S.subjects.length).fill(0);
-  S.cPlan.forEach(sl => { if(sl.si < hpw.length) hpw[sl.si] += sl.hrs; });
-  return hpw;
-}
-
-function getHpwPerSubj(){
-  return S.planMode==='W' ? getHpwPerSubjWeekly() : getHpwPerSubjCustom();
-}
-
-function getTotalHpw(){return getHpwPerSubj().reduce((a,x)=>a+x,0)}
-
-function calcPerSubj(){
-  const hpw = getHpwPerSubj();
-  return S.subjects.map((s,i) => {
-    const rem = Math.max(0, s.totalHrs - s.doneHrs);
-    const h = hpw[i];
-    let finResult;
-    if(S.planMode==='W'){
-      finResult = calcFinishDate(i, rem);
-    } else {
-      finResult = calcFinishDateCustom(i, rem);
-    }
-    return {name:s.name, totalHrs:s.totalHrs, doneHrs:s.doneHrs, rem, hpw:h, finDate:finResult.date, done:finResult.done, si:i};
+    return {
+      si: i, name: s.name, totalHrs: s.totalHrs, doneHrs: s.doneHrs, hpw,
+      rem: Math.max(0, s.totalHrs - s.doneHrs),
+      finDateNormal: tn ? tn.finDate : null,
+      finDateTransfer: tt ? tt.finDate : null
+    };
   });
+}
+
+function getTotalHpw(){
+  let tot = 0;
+  S.subjects.forEach((_, i) => {
+    if (S.planMode === 'W') {
+      S.wPlan.forEach(day => (day||[]).forEach(sl => { if(sl.si === i) tot += sl.hrs; }));
+    } else {
+      S.cPlan.forEach(sl => { if(sl.si === i) tot += sl.hrs; });
+    }
+  });
+  return tot;
 }
 
 function fmtTH(d){
   if(!d) return '—';
-  return d.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  return d.toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'});
 }
 
 function daysDiff(a, b){
   if(!a||!b) return null;
-  return Math.round((b-a)/(1000*60*60*24));
+  const aCopy = new Date(a); aCopy.setHours(0,0,0,0);
+  const bCopy = new Date(b); bCopy.setHours(0,0,0,0);
+  return Math.round((bCopy-aCopy)/(1000*60*60*24));
 }
 
-function buildWarnings(perSubj){
-  const active = perSubj.filter(x => x.rem > 0 && x.hpw > 0 && x.finDate);
-  if(active.length < 2) return [];
+function buildTransferReports(perSubj) {
+  const reports = [];
+  const active = perSubj.filter(x => x.hpw > 0 && x.finDateTransfer);
+  if (active.length < 2) return [];
 
-  active.sort((a,b) => a.finDate - b.finDate);
-  const earliest = active[0];
+  active.sort((a, b) => a.finDateTransfer - b.finDateTransfer);
+  
+  for (let i = 0; i < active.length - 1; i++) {
+    const currentSubj = active[i];
+    const laterSubjs = active.slice(i + 1).filter(x => x.rem > 0);
+    if (laterSubjs.length > 0) {
+      const names = laterSubjs.map(x => {
+        const cl = cc(x.si);
+        return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span>`;
+      }).join(' ');
 
-  if(!S.startDate) return [];
-  const startD = new Date(S.startDate+'T00:00:00');
-
-  const latestFinDate = active[active.length-1].finDate;
-  const origDays = daysDiff(startD, latestFinDate);
-  const daysUntilEarliestFinish = daysDiff(startD, earliest.finDate);
-
-  let simSubjects = active.slice(1).map(x => {
-    const hrsProcessedBefore = (x.hpw / 7) * daysUntilEarliestFinish;
-    return {
-      si: x.si,
-      hpwOrig: x.hpw,
-      rem: Math.max(0, x.rem - hrsProcessedBefore)
-    };
-  });
-
-  const extraHpw = earliest.hpw;
-  let simDaysCount = daysUntilEarliestFinish;
-  let totalRemainingLater = simSubjects.reduce((sum, s) => sum + s.rem, 0);
-
-  if (totalRemainingLater > 0) {
-    while (totalRemainingLater > 0) {
-      simDaysCount++;
-      let currentActiveTotal = simSubjects.reduce((sum, s) => sum + s.rem, 0);
-      if (currentActiveTotal <= 0) break;
-
-      simSubjects.forEach(s => {
-        if (s.rem > 0) {
-          const newHpwForSubj = s.hpwOrig + (extraHpw * (s.rem / currentActiveTotal));
-          const hpdForSubj = newHpwForSubj / 7;
-          const progressToday = Math.min(hpdForSubj, s.rem);
-          s.rem -= progressToday;
-        }
+      reports.push({
+        date: currentSubj.finDateTransfer, subjName: currentSubj.name, si: currentSubj.si,
+        targetNames: names, freedHrs: currentSubj.hpw
       });
-      totalRemainingLater = simSubjects.reduce((sum, s) => sum + s.rem, 0);
-      if (simDaysCount > 3650) break;
     }
   }
-
-  const newLatestDays = simDaysCount;
-  const savedDays = (origDays !== null && newLatestDays !== null) ? Math.max(0, origDays - newLatestDays) : 0;
-
-  const later = active.slice(1);
-  const laterNames = later.map(x => {
-    const cl=cc(x.si);
-    return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span>`;
-  }).join(' ');
-
-  return [{date:earliest.finDate, subj:earliest, laterNames, extraHpw, savedDays}];
+  return reports;
 }
 
 function renderWarnings(warns, el){
   if(!el) return;
   if(!warns.length){el.style.display='none';return;}
   el.style.display='block';
-  let html='<div style="font-size:12px;font-weight:600;color:#412402;margin-bottom:8px"><i class="ti ti-alert-triangle" aria-hidden="true"></i> รายงานวิเคราะห์ไทม์ไลน์ — วิชาที่จะเรียนจบก่อน</div>';
-  warns.forEach(w=>{
-    const cl=cc(w.subj.si);
-    html+=`<div class="warn-box"><span class="chip" style="background:${cl.bg};color:${cl.tx}">${w.subj.name}</span> จะเรียนจบครบตามเป้าหมายก่อนวิชาอื่นในวันที่ <b>${fmtTH(w.date)}</b><br>ส่งผลให้เกิดเวลาว่างในแผนการเรียน: <b>${w.extraHpw.toFixed(1)} ชม./สัปดาห์</b></div>`;
+  
+  let html=`<div style="font-size:12px;font-weight:600;color:#14532d;margin-bottom:8px">
+    <i class="ti ti-arrows-transfer-down" aria-hidden="true"></i> รายงานกลยุทธ์จัดสัดส่วนเวลาเรียนใหม่ (Dynamic Redistribution Log)
+  </div>`;
+  
+  warns.forEach(w => {
+    const cl = cc(w.si);
+    html += `<div class="warn-box">
+      <i class="ti ti-circle-check" aria-hidden="true"></i> ตั้งแต่วันที่ <b>${fmtTH(w.date)}</b> วิชา 
+      <span class="chip" style="background:${cl.bg};color:${cl.tx}">${w.subjName}</span> จะเรียนจบ <br>
+      → มีเวลาเรียนเพิ่ม <b>+${w.freedHrs.toFixed(1)} ชม./สัปดาห์</b> นำไปใช้เรียนเพิ่มกับวิชา ${w.targetNames} ได้
+    </div>`;
   });
-  html+=`<div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i> <b>คำแนะนำเชิงกลยุทธ์:</b> เมื่อถึงวันดังกล่าว ให้นำเวลา <b>${warns[0].extraHpw.toFixed(1)} ชม./สัปดาห์</b> ที่ว่างไปเกลี่ยเพิ่มให้กลุ่มวิชา ${warns[0].laterNames} ตามสัดส่วนปริมาณงานที่เหลืออยู่ ซึ่งลอจิกจำลองพบว่าจะช่วยให้เรียนจบหลักสูตรรวมเร็วขึ้นประมาณ <b>${warns[0].savedDays} วัน</b> ครับ</div>`;
-  el.innerHTML=html;
+  el.innerHTML = html;
+}
+
+function renderComparisonTable(data, targetEl) {
+  if(!targetEl) return;
+  
+  const today = new Date(); today.setHours(0,0,0,0);
+  
+  const activeNormal = data.filter(x => x.rem > 0 && x.hpw > 0 && x.finDateNormal);
+  const maxFinNormal = activeNormal.length ? activeNormal.reduce((a,x) => x.finDateNormal > a ? x.finDateNormal : a, activeNormal[0].finDateNormal) : null;
+  
+  const activeTransfer = data.filter(x => x.rem > 0 && x.hpw > 0 && x.finDateTransfer);
+  const maxFinTransfer = activeTransfer.length ? activeTransfer.reduce((a,x) => x.finDateTransfer > a ? x.finDateTransfer : a, activeTransfer[0].finDateTransfer) : null;
+
+  let html = `
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>ชื่อรายวิชา</th>
+          <th>แบบแผนเดิมปกติ</th>
+          <th>แบบเกลี่ยวิชาที่จบ</th>
+          <th>ส่วนต่าง</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.forEach(x => {
+    const cl = cc(x.si);
+    let cellNormal = '—';
+    let cellTransfer = '—';
+    let cellDiff = '—';
+
+    if (x.doneHrs >= x.totalHrs) {
+      cellNormal = '<span style="color:#16a34a">✓ จบแล้ว</span>';
+      cellTransfer = '<span style="color:#16a34a">✓ จบแล้ว</span>';
+      cellDiff = '<span style="color:var(--color-text-tertiary)">-</span>';
+    } else {
+      if (x.hpw > 0) {
+        cellNormal = x.finDateNormal ? fmtTH(x.finDateNormal) : 'ไม่สิ้นสุด';
+        cellTransfer = x.finDateTransfer ? fmtTH(x.finDateTransfer) : 'ไม่สิ้นสุด';
+        
+        if (x.finDateNormal && x.finDateTransfer) {
+          const diff = daysDiff(x.finDateTransfer, x.finDateNormal);
+          if (diff > 0) {
+            cellDiff = `<span class="txt-green">เร็วขึ้น ${diff} วัน</span>`;
+          } else if (diff === 0) {
+            cellDiff = '<span style="color:var(--color-text-tertiary)">เท่ากัน</span>';
+          }
+        }
+      } else {
+        cellNormal = '<span style="color:var(--color-text-danger)">ไม่มีแผนเดิม</span>';
+        cellTransfer = x.finDateTransfer ? fmtTH(x.finDateTransfer) : 'ไม่สิ้นสุด';
+        if (x.finDateTransfer) {
+          cellDiff = `<span class="txt-blue">จบได้จากการเกลี่ย</span>`;
+        }
+      }
+    }
+
+    html += `
+      <tr>
+        <td><span class="chip" style="background:${cl.bg};color:${cl.tx};margin:0">${x.name}</span></td>
+        <td><span style="font-size:11.5px;color:var(--color-text-secondary)">${cellNormal}</span></td>
+        <td><b>${cellTransfer}</b></td>
+        <td>${cellDiff}</td>
+      </tr>
+    `;
+  });
+
+  let totalDiffStr = '—';
+  if (maxFinNormal && maxFinTransfer) {
+    const totalDiff = daysDiff(maxFinTransfer, maxFinNormal);
+    totalDiffStr = totalDiff > 0 ? `ประหยัดเวลาลงได้หลักสูตรรวม ${totalDiff} วัน!` : 'สิ้นสุดพร้อมกัน';
+  }
+
+  html += `
+      </tbody>
+    </table>
+    <div class="dv"></div>
+    <div style="font-size:13px; line-height:1.6">
+      <div style="color:var(--color-text-secondary)"><i class="ti ti-flag-2" aria-hidden="true"></i> วันเรียนจบรวม (แผนปกติ): <span style="font-size:12px;color:var(--color-text-primary)">${fmtTH(maxFinNormal)}</span></div>
+      <div style="color:var(--color-primary); font-weight:600"><i class="ti ti-bolt" aria-hidden="true"></i> วันเรียนจบรวม (แผนเกลี่ยวิชาที่จบ): <span style="font-size:13px" class="txt-blue">${fmtTH(maxFinTransfer)}</span></div>
+      ${maxFinNormal && maxFinTransfer && daysDiff(maxFinTransfer, maxFinNormal) > 0 ? `<div class="tip-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#14532d"><i class="ti ti-sparkles" aria-hidden="true"></i> <b>วิเคราะห์ความเร็ว:</b> หากเรียนวิชาที่ยังไม่จบแทนวิชาที่เรียนจบแล้วทำให้คุณสามารถปิดเป้าหมายการเรียนรวมได้เร็วขึ้นกว่าเดิมถึง <b>${daysDiff(maxFinTransfer, maxFinNormal)} วัน</b> ครับ!</div>` : ''}
+    </div>
+  `;
+
+  targetEl.innerHTML = html;
 }
 
 function genSubj(){
@@ -553,7 +746,7 @@ function rWkSum(){
   });
   const box=document.getElementById('wkSum');if(!box)return;
   box.style.display=tot>0?'block':'none';
-  if(tot>0)box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>ภาระงานรวม: ${tot.toFixed(1)} ชม./สัปดาห์</b></div></div>`;
+  if(tot>0)box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>เวลาเรียนรวม: ${tot.toFixed(1)} ชม./สัปดาห์</b></div></div>`;
 }
 
 function addCSlot(){S.cPlan.push({si:0,label:'',hrs:1});rCSlots()}
@@ -593,34 +786,18 @@ function rCSum(){
   }
 }
 
-function savePlan(){save();rPlanRes();document.getElementById('planResCard').style.display='block';alert('บันทึกแผนการเรียนเรียบร้อยแล้วครับ!')}
+function savePlan(){save();rPlanRes();document.getElementById('planResCard').style.display='block';alert('บันทึกแผนและอัปเดตระบบวิเคราะห์เปรียบเทียบเรียบร้อยครับ!')}
 
 function rPlanRes(){
-  const perSubj=calcPerSubj();
-  const active=perSubj.filter(x=>x.rem>0&&x.hpw>0&&x.finDate);
-  const allFinDate=active.length?active.reduce((a,x)=>x.finDate>a?x.finDate:a,active[0].finDate):null;
-  const hpw=getTotalHpw();
-  const modeLabel=S.planMode==='W'?'แผนรายสัปดาห์':'แผนกำหนดเองอิสระ';
-  const startD=S.startDate?new Date(S.startDate+'T00:00:00'):null;
-  
+  const dualData = calcDualTrackTimeline();
+  const hpw = getTotalHpw();
   const lblMode = document.getElementById('planResModeLbl');
-  if(lblMode) lblMode.textContent='กำลังใช้: '+modeLabel;
+  if(lblMode) lblMode.textContent='โหมดจำลอง: '+(S.planMode==='W'?'ตารางรายสัปดาห์':'กำหนดเองอิสระ');
   
   const pr=document.getElementById('planRes');
   if(hpw>0){
     document.getElementById('planResCard').style.display='block';
-    const lines=perSubj.map(x=>{
-      const cl=cc(x.si);
-      let status;
-      if(x.rem===0){status='<span style="color:#3B6D11; font-weight:600">✓ เรียนครบชั่วโมงแล้ว</span>';}
-      else if(x.hpw>0&&x.finDate){
-        const d=startD?daysDiff(startD,x.finDate):null;
-        status=`→ เรียนจบวันที่ <b>${fmtTH(x.finDate)}</b> ${d!==null?` (${d} วัน)`:''}`;
-      } else {status='<span style="color:var(--color-text-danger)">ยังไม่ได้จัดวิชานี้ลงแผน</span>';}
-      return `<div style="margin-bottom:4px;"><span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span> เหลือ <b>${x.rem.toFixed(1)} ชม.</b> · จัดไว้ ${x.hpw.toFixed(1)} ชม./สัปดาห์ ${status}</div>`;
-    });
-    if(pr) pr.innerHTML=`<div class="rb">${lines.join('')}<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary); color: var(--color-primary); font-weight:600"><i class="ti ti-flag" aria-hidden="true"></i> วันที่คาดว่าจะเรียนครบทุกวิชา (แผนปกติ): <b>${fmtTH(allFinDate)}</b></div></div>`;
-    renderWarnings(buildWarnings(perSubj),document.getElementById('planWarnBox'));
+    renderComparisonTable(dualData, pr);
   } else {
     document.getElementById('planResCard').style.display='none';
   }
@@ -633,7 +810,12 @@ function rLog(){
   if(noLog) noLog.style.display=has?'none':'block';
   if(logFrm) logFrm.style.display=has?'block':'none';
   if(!has)return;
-  document.getElementById('lDate').value=new Date().toISOString().slice(0,10);
+  
+  // แก้วันที่เริ่มต้นให้ดึง Local Time ที่แท้จริงจากเครื่องของผู้ใช้
+  const now = new Date();
+  const dStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  document.getElementById('lDate').value=dStr;
+  
   const c=document.getElementById('lSubjs');if(!c)return;c.innerHTML='';
   S.subjects.forEach((s,i)=>{
     const rem=Math.max(0,s.totalHrs-s.doneHrs);
@@ -641,9 +823,9 @@ function rLog(){
     const d=document.createElement('div');d.className='ts';
     d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span class="chip" style="background:${cl.bg};color:${cl.tx}">${s.name}</span>
-        <span style="font-size:11px;color:var(--color-text-secondary)">ความคืบหน้า: เรียนแล้ว ${s.doneHrs.toFixed(1)} จากเป้าหมาย ${s.totalHrs} ชม. (คงเหลือ ${rem.toFixed(1)} ชม.)</span>
+        <span style="font-size:11px;color:var(--color-text-secondary)">เรียนแล้ว ${s.doneHrs.toFixed(1)} / ${s.totalHrs} ชม. (คงเหลือ ${rem.toFixed(1)} ชม.)</span>
       </div>
-      <div class="tr" style="margin-top:6px"><lbl>บันทึกเวลาที่เรียนวันนี้ (ชม.)</lbl><input type="number" id="li${i}" min="0" step="0.5" value="0" oninput="updLTot()" style="width:70px;margin:0"/></div>`;
+      <div class="tr" style="margin-top:6px"><lbl>บันทึกชั่วโมงที่เรียนเพิ่มวันนี้</lbl><input type="number" id="li${i}" min="0" step="0.5" value="0" oninput="updLTot()" style="width:70px;margin:0"/></div>`;
     c.appendChild(d);
   });
   document.getElementById('lTotBox').style.display='none';
@@ -662,15 +844,28 @@ function updLTot(){
 
 function saveLog(){
   const date=document.getElementById('lDate').value;
-  if(!date){alert('กรุณาระบุวันที่ทำการบันทึกข้อมูลครับ');return}
+  if(!date){alert('กรุณาระบุวันที่บันทึกข้อมูลครับ');return}
   const ents=[];let tot=0;
   S.subjects.forEach((s,i)=>{
     const el = document.getElementById('li'+i);
     const h=el?+el.value||0:0;
     if(h>0){ents.push({si:i,name:s.name,hrs:h});s.doneHrs+=h;tot+=h;}
   });
-  if(!ents.length){alert('กรุณาใส่เวลาเรียนอย่างน้อย 1 รายวิชาเพื่อบันทึกครับ');return}
-  S.logs.push({date,ents,tot});save();alert(`บันทึกชั่วโมงการศึกษาสำเร็จ! รวมทั้งหมด ${tot.toFixed(1)} ชม.`);sw('dash');
+  if(!ents.length){alert('กรุณากรอกเวลาเรียนเพื่อบันทึกครับ');return}
+  
+  const existIdx = S.logs.findIndex(l => l.date === date);
+  if(existIdx >= 0) {
+    ents.forEach(e => {
+      const oldEnt = S.logs[existIdx].ents.find(o => o.si === e.si);
+      if(oldEnt) oldEnt.hrs += e.hrs;
+      else S.logs[existIdx].ents.push(e);
+    });
+    S.logs[existIdx].tot += tot;
+  } else {
+    S.logs.push({date,ents,tot});
+  }
+  
+  save();alert(`บันทึกชั่วโมงสำเร็จ! เพิ่มรวม ${tot.toFixed(1)} ชม.`);sw('dash');
 }
 
 function rDash(){
@@ -680,31 +875,32 @@ function rDash(){
   if(noDash) noDash.style.display=has?'none':'block';
   if(dashCnt) dashCnt.style.display=has?'block':'none';
   if(!has)return;
+  
   const tgt=S.subjects.reduce((a,s)=>a+s.totalHrs,0);
   const done=S.subjects.reduce((a,s)=>a+s.doneHrs,0);
   const pct=tgt>0?Math.round(done/tgt*100):0;
-  const perSubj=calcPerSubj();
-  const active=perSubj.filter(x=>x.rem>0&&x.hpw>0&&x.finDate);
-  const allFinDate=active.length?active.reduce((a,x)=>x.finDate>a?x.finDate:a,active[0].finDate):null;
-  const startD=S.startDate?new Date(S.startDate+'T00:00:00'):null;
-  const daysLeft=allFinDate?daysDiff(new Date(),allFinDate):0;
-  const allDone=S.subjects.every(s=>s.doneHrs>=s.totalHrs);
-  const endStr=allDone?'เรียนครบทุกวิชาแล้ว':fmtTH(allFinDate);
-  const modeLabel=S.planMode==='W'?'แผนรายสัปดาห์':'แผนกำหนดเองอิสระ';
   
-  const lblMode = document.getElementById('dashPlanModeLbl');
-  if(lblMode) lblMode.textContent='กำลังใช้: '+modeLabel;
+  const dualData = calcDualTrackTimeline();
+  
+  const activeTransfer = dualData.filter(x => x.rem > 0 && x.finDateTransfer);
+  const maxFinTransfer = activeTransfer.length ? activeTransfer.reduce((a,x) => x.finDateTransfer > a ? x.finDateTransfer : a, activeTransfer[0].finDateTransfer) : null;
+  
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysLeft = maxFinTransfer ? daysDiff(today, maxFinTransfer) : 0;
+  const allDone = S.subjects.every(s => s.doneHrs >= s.totalHrs);
+  const endStr = allDone ? 'เรียนครบทุกวิชาแล้ว' : fmtTH(maxFinTransfer);
 
   const mGrid = document.getElementById('mGrid');
   if(mGrid) {
     mGrid.innerHTML=`
-      <div class="mt"><div class="ml">เป้าหมาย</div><div class="mv" style="font-size:13px;margin-top:4px;line-height:1.3;word-break:break-word;">${S.goalName||'-'}</div></div>
-      <div class="mt"><div class="ml">ความคืบหน้า</div><div class="mv">${pct}%</div><div class="ms">${done.toFixed(1)} / ${tgt} ชม.</div></div>
-      <div class="mt"><div class="ml">วันที่เหลือ</div><div class="mv" style="color:${allDone?'#16a34a':'var(--color-primary)'}">${allDone?'✓':Math.max(0,daysLeft)}</div><div class="ms">${allDone?'เรียนครบแล้ว':'วันคงเหลือ'}</div></div>
-      <div class="mt"><div class="ml">เรียนครบวันที่</div><div class="mv" style="font-size:11.5px;margin-top:4px;line-height:1.3">${endStr}</div></div>`;
+      <div class="mt"><div class="ml">เป้าหมายคอร์ส</div><div class="mv" style="font-size:12.5px;margin-top:4px;line-height:1.3;word-break:break-word">${S.goalName||'-'}</div></div>
+      <div class="mt"><div class="ml">ความคืบหน้ารวม</div><div class="mv">${pct}%</div><div class="ms">${done.toFixed(1)} / ${tgt} ชม.</div></div>
+      <div class="mt"><div class="ml">วันคงเหลือจริง (เกลี่ย)</div><div class="mv" style="color:${allDone?'#16a34a':'var(--color-primary)'}">${allDone?'✓':Math.max(0,daysLeft)}</div><div class="ms">${allDone?'เรียนครบแล้ว':'นับจากวันนี้'}</div></div>
+      <div class="mt"><div class="ml">วันเรียนจบรวม (เกลี่ย)</div><div class="mv" style="font-size:11px;margin-top:4px;line-height:1.3;color:#16a34a;font-weight:700">${endStr}</div></div>`;
   }
 
-  const pc=document.getElementById('subjProg');if(pc) {
+  const pc = document.getElementById('subjProg');
+  if(pc) {
     pc.innerHTML='';
     S.subjects.forEach((s,i)=>{
       const p=s.totalHrs>0?Math.min(100,Math.round(s.doneHrs/s.totalHrs*100)):0;
@@ -718,34 +914,40 @@ function rDash(){
     });
   }
 
+  renderComparisonTable(dualData, document.getElementById('comparisonContainer'));
+
   const hpwTotal=getTotalHpw();
   const hpd=hpwTotal>0?(hpwTotal/7).toFixed(1):'-';
-  const lines=perSubj.map(x=>{
-    const cl=cc(x.si);
-    let status;
-    if(x.rem===0){status='<span style="color:#16a34a; font-weight:600">✓ ครบแล้ว</span>';}
-    else if(x.hpw>0&&x.finDate){status=`→ วันที่ <b>${fmtTH(x.finDate)}</b>`;}
-    else{status='<span style="color:var(--color-text-danger)">ไม่มีตารางเรียน</span>';}
-    return `<div style="margin-bottom:3px;"><span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span> เหลือ <b>${x.rem.toFixed(1)} ชม.</b> ${status}</div>`;
-  });
   
+  const statusLines = dualData.map(x => {
+    const cl = cc(x.si);
+    let txt = '';
+    if(x.doneHrs >= x.totalHrs) txt = '<span style="color:#16a34a; font-weight:600"><i class="ti ti-check" aria-hidden="true"></i> จบแล้ว</span>';
+    else if(x.finDateTransfer) txt = `→ สิ้นสุด (แผนเกลี่ย): <b>${fmtTH(x.finDateTransfer)}</b>`;
+    else txt = '<span style="color:var(--color-text-danger)">ไม่มีเวลาในตาราง</span>';
+    return `<div style="margin-bottom:4px;"><span class="chip" style="background:${cl.bg};color:${cl.tx}">${x.name}</span> คงเหลือ <b>${x.rem.toFixed(1)} ชม.</b> ${txt}</div>`;
+  });
+
   const elUpd = document.getElementById('updPlan');
-  if(elUpd) elUpd.innerHTML=`<div class="rb">${lines.join('')}<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary)">ตารางแผนรวม: <b>${hpwTotal.toFixed(1)} ชม./สัปดาห์</b> (~เฉลี่ยวันละ ${hpd} ชม.) · เรียนจบหลักสูตรวันที่ <b>${endStr}</b></div></div>`;
-  renderWarnings(buildWarnings(perSubj),document.getElementById('dashWarnBox'));
+  if(elUpd) {
+    elUpd.innerHTML=`<div class="rb">${statusLines.join('')}<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)">เวลาเรียนในแผนตั้งต้น: <b>${hpwTotal.toFixed(1)} ชม./สัปดาห์</b> (~วันละ ${hpd} ชม.)</div></div>`;
+  }
+  
+  renderWarnings(buildTransferReports(dualData), document.getElementById('dashWarnBox'));
 }
 
 function rHist(){
   const c=document.getElementById('histList');if(!c)return;
-  if(!S.logs.length){c.innerHTML='<div class="emp">ยังไม่มีรายการบันทึกเวลาการเรียนในระบบครับ</div>';return}
+  if(!S.logs.length){c.innerHTML='<div class="emp">ยังไม่มีรายการบันทึกเวลาในระบบครับ</div>';return}
   c.innerHTML='';
   [...S.logs].reverse().forEach((log,ri)=>{
     const i=S.logs.length-1-ri;
     const d=document.createElement('div');d.className='le';
     const chips=log.ents.map(e=>{const cl=cc(e.si);return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${e.name} ${e.hrs}ชม.</span>`;}).join('');
     d.innerHTML=`<div>
-      <div style="font-weight:600;color:var(--color-text-primary);margin-bottom:4px">${fmtD(log.date)} — บันทึกรวมทั้งสิ้น ${log.tot.toFixed(1)} ชม.</div>
+      <div style="font-weight:600;color:var(--color-text-primary);margin-bottom:4px">${fmtD(log.date)} — รวม ${log.tot.toFixed(1)} ชม.</div>
       <div>${chips}</div>
-    </div><button class="db" onclick="delLog(${i})"><i class="ti ti-trash"></i> ลบ</button>`;
+    </div><button class="db" onclick="delLog(${i})"><i class="ti ti-trash" aria-hidden="true"></i> ลบ</button>`;
     c.appendChild(d);
   });
 }
@@ -753,21 +955,20 @@ function rHist(){
 function fmtD(ds){const d=new Date(ds+'T00:00:00');return d.toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'})}
 
 function delLog(i){
-  if(!confirm('ยืนยันที่จะลบรายการประวัติการบันทึกชั่วโมงศึกษานี้ใช่ไหมครับ? (ระบบจะหักชั่วโมงเรียนสะสมออกด้วย)'))return;
+  if(!confirm('ต้องการลบประวัติรายการนี้ใช่ไหมครับ? (ชั่วโมงสะสมจะถูกหักออกด้วย)'))return;
   S.logs[i].ents.forEach(e=>{
     if(S.subjects[e.si]) {
       S.subjects[e.si].doneHrs=Math.max(0,S.subjects[e.si].doneHrs-e.hrs);
     }
   });
-  S.logs.splice(i,1);save();rHist();
+  S.logs.splice(i,1);save();rHist();rDash();
 }
 
 function clrHist(){
-  if(!confirm('คำเตือน! คุณต้องการล้างข้อมูลประวัติและรีเซ็ตชั่วโมงที่เรียนสะสมของทุกวิชากลับเป็น 0 ใช่หรือไม่ครับ?'))return;
-  S.logs=[];S.subjects.forEach(s=>s.doneHrs=0);save();rHist();
+  if(!confirm('คุณต้องการล้างประวัติการบันทึกทั้งหมดและเริ่มต้นนับชั่วโมงใหม่ใช่หรือไม่ครับ?'))return;
+  S.logs=[];S.subjects.forEach(s=>s.doneHrs=0);save();rHist();rDash();
 }
 
-// เรียกให้ทำงานทันทีหลังโหลด Element เสร็จ
 window.addEventListener('DOMContentLoaded', (event) => {
   if(S.goalName) {
     const elG = document.getElementById('gName');
@@ -777,12 +978,19 @@ window.addEventListener('DOMContentLoaded', (event) => {
     const elN = document.getElementById('nSubj');
     if(elN) elN.value=S.subjects.length;
   }
-  const today=new Date().toISOString().slice(0,10);
+  
+  // แก้วันที่เริ่มต้นให้ดึง Local Time
+  const now = new Date();
+  const dStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  
   const elSDate = document.getElementById('sDate');
   const elLDate = document.getElementById('lDate');
-  if(elSDate) elSDate.value=S.startDate||today;
-  if(elLDate) elLDate.value=today;
+  if(elSDate) elSDate.value=S.startDate||dStr;
+  if(elLDate) elLDate.value=dStr;
+  
   if(S.subjects.length) genSubj();
+  
+  sw('dash');
 });
 </script>
 </body>
