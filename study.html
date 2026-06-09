@@ -292,6 +292,10 @@ function getActualLogsMap(){
   return logMap;
 }
 
+// ==========================================
+// DUAL-TRACK ENGINE: เปลี่ยนระบบการเกลี่ยเวลาใหม่
+// แบบทุ่มให้ทีละวิชาจบ (Waterfall Allocation) ตามโจทย์
+// ==========================================
 function runSimulationTrack(withTransfer) {
   const n = S.subjects.length;
   const results = Array.from({ length: n }, (_, i) => ({
@@ -322,7 +326,6 @@ function runSimulationTrack(withTransfer) {
   let cur = new Date(start);
   let guard = 0;
 
-  // ปรับให้ดึงวันที่ปัจจุบัน (Local Time) ตรงๆ ป้องกันปัญหา Timezone ชิฟต์ไป 7 ชั่วโมง
   const todY = today.getFullYear();
   const todM = String(today.getMonth() + 1).padStart(2, '0');
   const todD = String(today.getDate()).padStart(2, '0');
@@ -341,9 +344,6 @@ function runSimulationTrack(withTransfer) {
     const dateStr = `${curY}-${curM}-${curD}`;
     const dow = jsDay(cur);
     
-    // FIXED: ลอจิกตรวจสอบสถานะ Log ใหม่ 
-    // หากมี Log จริงในวันนั้นๆ ให้ยึด Log เป็นหลักเสมอ ไม่ว่าจะเป็นวันนี้ หรืออนาคตที่ลงล่วงหน้า
-    // หากไม่มี Log แต่เป็นอดีต (เลยวันนี้ไปแล้ว) ให้มองว่าเป็นวันขาด (0 ชม.)
     let isHistoricalLog = false;
     if (logMap[dateStr]) {
       isHistoricalLog = true;
@@ -351,83 +351,57 @@ function runSimulationTrack(withTransfer) {
       isHistoricalLog = true;
     }
 
-    const finalAlloc = new Array(n).fill(0);
     let surplusPool = 0;
+    const finalAlloc = new Array(n).fill(0);
 
-    if (isHistoricalLog) {
-      for (let i = 0; i < n; i++) {
-        const loggedHrs = (logMap[dateStr] && logMap[dateStr][i]) ? logMap[dateStr][i] : 0;
-        if (loggedHrs > 0) {
-          if (accHrs[i] >= results[i].totalHrs && withTransfer) {
-            surplusPool += loggedHrs;
-          } else {
-            finalAlloc[i] = loggedHrs;
-          }
-        }
-      }
-    } else {
-      // เมื่อไม่มี Log ของวันนี้หรืออนาคต ระบบจะดึงแผนตั้งต้น (Base Plan) มาใช้วิเคราะห์แทน
-      for (let i = 0; i < n; i++) {
-        const baseHrs = baseHpd[dow][i];
-        if (baseHrs > 0) {
-          if (accHrs[i] < results[i].totalHrs) {
-            finalAlloc[i] = baseHrs;
-          } else if (withTransfer) {
-            surplusPool += baseHrs;
-          }
-        }
-      }
-    }
-
-    if (withTransfer && surplusPool > 0) {
-      let activeReceivers = [];
-      
-      for (let i = 0; i < n; i++) {
-        if (accHrs[i] < results[i].totalHrs && baseHpd[dow][i] > 0) {
-          activeReceivers.push(i);
-        }
-      }
-
-      if (activeReceivers.length === 0) {
-        for (let i = 0; i < n; i++) {
-          if (accHrs[i] < results[i].totalHrs) {
-            activeReceivers.push(i);
-          }
-        }
-      }
-
-      if (activeReceivers.length > 0) {
-        const share = surplusPool / activeReceivers.length;
-        activeReceivers.forEach(idx => { finalAlloc[idx] += share; });
-      }
-    }
-
+    // ขั้นที่ 1: จ่ายเวลาตามตารางปกติของแต่ละวิชา
     for (let i = 0; i < n; i++) {
-      if (finalAlloc[i] > 0 && accHrs[i] < results[i].totalHrs) {
-        const remRequired = results[i].totalHrs - accHrs[i];
-        const actualGain = Math.min(finalAlloc[i], remRequired);
+      let expectedHrs = 0;
+      if (isHistoricalLog) {
+        expectedHrs = (logMap[dateStr] && logMap[dateStr][i]) ? logMap[dateStr][i] : 0;
+      } else {
+        expectedHrs = baseHpd[dow][i];
+      }
 
-        accHrs[i] += actualGain;
+      if (expectedHrs > 0) {
+        let rem = results[i].totalHrs - accHrs[i];
+        if (rem > 0) {
+          let canTake = Math.min(expectedHrs, rem);
+          finalAlloc[i] += canTake;
+          
+          // ถ้าชั่วโมงที่จัดไว้ มากกว่าชั่วโมงที่ต้องการเพื่อจบ ส่วนเกินจะกลายเป็น Surplus
+          if (withTransfer) surplusPool += (expectedHrs - canTake);
+        } else if (withTransfer) {
+          // ถ้าวิชานั้นจบไปแล้ว เวลาทั้งหมดจะเทเข้ากองกลาง Surplus ทันที
+          surplusPool += expectedHrs;
+        }
+      }
+    }
 
+    // ขั้นที่ 2: ระบบเกลี่ยเวลาแบบ Waterfall Allocation (เทให้ทีละวิชาจบไวที่สุด)
+    if (withTransfer && surplusPool > 0) {
+      for (let i = 0; i < n; i++) {
+        let rem = results[i].totalHrs - (accHrs[i] + finalAlloc[i]);
+        if (rem > 0) {
+          // ทุ่มเวลาทั้งหมดจากกองกลางที่มีให้วิชานี้ก่อน
+          let take = Math.min(surplusPool, rem);
+          finalAlloc[i] += take;
+          surplusPool -= take;
+          
+          // ถ้าเวลาในกองกลางหมด ก็จะหยุดเกลี่ยในวันนี้ทันที 
+          // (ส่งผลให้วิชาถัดๆ ไปต้องรอคิวให้วิชาปัจจุบันจบก่อน ตามโจทย์เคมี-ฟิสิกส์)
+          if (surplusPool <= 0) break;
+        }
+      }
+    }
+
+    // ขั้นที่ 3: บันทึกความคืบหน้าของวันนี้ และตรวจสอบวันจบของวิชานั้นๆ
+    for (let i = 0; i < n; i++) {
+      if (finalAlloc[i] > 0 && !results[i].done) {
+        accHrs[i] += finalAlloc[i];
         if (accHrs[i] >= results[i].totalHrs) {
           results[i].finDate = new Date(cur);
           results[i].done = true;
-          
-          if (withTransfer && finalAlloc[i] > actualGain) {
-            let residual = finalAlloc[i] - actualGain;
-            for (let j = 0; j < n; j++) {
-              if (accHrs[j] < results[j].totalHrs && residual > 0) {
-                const nextRem = results[j].totalHrs - accHrs[j];
-                const nextGain = Math.min(residual, nextRem);
-                accHrs[j] += nextGain;
-                residual -= nextGain;
-                if (accHrs[j] >= results[j].totalHrs) {
-                  results[j].finDate = new Date(cur);
-                  results[j].done = true;
-                }
-              }
-            }
-          }
         }
       }
     }
@@ -608,7 +582,7 @@ function renderComparisonTable(data, targetEl) {
     <div style="font-size:13px; line-height:1.6">
       <div style="color:var(--color-text-secondary)"><i class="ti ti-flag-2" aria-hidden="true"></i> วันเรียนจบรวม (แผนปกติ): <span style="font-size:12px;color:var(--color-text-primary)">${fmtTH(maxFinNormal)}</span></div>
       <div style="color:var(--color-primary); font-weight:600"><i class="ti ti-bolt" aria-hidden="true"></i> วันเรียนจบรวม (แผนเกลี่ยวิชาที่จบ): <span style="font-size:13px" class="txt-blue">${fmtTH(maxFinTransfer)}</span></div>
-      ${maxFinNormal && maxFinTransfer && daysDiff(maxFinTransfer, maxFinNormal) > 0 ? `<div class="tip-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#14532d"><i class="ti ti-sparkles" aria-hidden="true"></i> <b>วิเคราะห์ความเร็ว:</b> หากเรียนวิชาที่ยังไม่จบแทนวิชาที่เรียนจบแล้วทำให้คุณสามารถปิดเป้าหมายการเรียนรวมได้เร็วขึ้นกว่าเดิมถึง <b>${daysDiff(maxFinTransfer, maxFinNormal)} วัน</b> ครับ!</div>` : ''}
+      ${maxFinNormal && maxFinTransfer && daysDiff(maxFinTransfer, maxFinNormal) > 0 ? `<div class="tip-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#14532d"><i class="ti ti-sparkles" aria-hidden="true"></i> <b>วิเคราะห์ความเร็ว:</b> หากเรียนวิชาที่ยังไม่จบแทนวิชาที่เรียนจบแล้วทำให้คุณสามารถเรียนจบเนื้อหาทั้งหมดได้เร็วขึ้นกว่าเดิมถึง <b>${daysDiff(maxFinTransfer, maxFinNormal)} วัน</b> ครับ!</div>` : ''}
     </div>
   `;
 
@@ -811,7 +785,6 @@ function rLog(){
   if(logFrm) logFrm.style.display=has?'block':'none';
   if(!has)return;
   
-  // แก้วันที่เริ่มต้นให้ดึง Local Time ที่แท้จริงจากเครื่องของผู้ใช้
   const now = new Date();
   const dStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
   document.getElementById('lDate').value=dStr;
@@ -979,7 +952,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
     if(elN) elN.value=S.subjects.length;
   }
   
-  // แก้วันที่เริ่มต้นให้ดึง Local Time
   const now = new Date();
   const dStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
   
