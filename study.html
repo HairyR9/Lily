@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Medical Study Planner</title>
+<title>Study Planner</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -292,10 +292,6 @@ function getActualLogsMap(){
   return logMap;
 }
 
-// ==========================================
-// DUAL-TRACK ENGINE: เปลี่ยนระบบการเกลี่ยเวลาใหม่
-// แบบทุ่มให้ทีละวิชาจบ (Waterfall Allocation) ตามโจทย์
-// ==========================================
 function runSimulationTrack(withTransfer) {
   const n = S.subjects.length;
   const results = Array.from({ length: n }, (_, i) => ({
@@ -326,6 +322,7 @@ function runSimulationTrack(withTransfer) {
   let cur = new Date(start);
   let guard = 0;
 
+  // ปรับให้ดึงวันที่ปัจจุบัน (Local Time) ตรงๆ ป้องกันปัญหา Timezone ชิฟต์ไป 7 ชั่วโมง
   const todY = today.getFullYear();
   const todM = String(today.getMonth() + 1).padStart(2, '0');
   const todD = String(today.getDate()).padStart(2, '0');
@@ -344,6 +341,9 @@ function runSimulationTrack(withTransfer) {
     const dateStr = `${curY}-${curM}-${curD}`;
     const dow = jsDay(cur);
     
+    // FIXED: ลอจิกตรวจสอบสถานะ Log ใหม่ 
+    // หากมี Log จริงในวันนั้นๆ ให้ยึด Log เป็นหลักเสมอ ไม่ว่าจะเป็นวันนี้ หรืออนาคตที่ลงล่วงหน้า
+    // หากไม่มี Log แต่เป็นอดีต (เลยวันนี้ไปแล้ว) ให้มองว่าเป็นวันขาด (0 ชม.)
     let isHistoricalLog = false;
     if (logMap[dateStr]) {
       isHistoricalLog = true;
@@ -351,57 +351,117 @@ function runSimulationTrack(withTransfer) {
       isHistoricalLog = true;
     }
 
-    let surplusPool = 0;
     const finalAlloc = new Array(n).fill(0);
+    let surplusPool = 0;
 
-    // ขั้นที่ 1: จ่ายเวลาตามตารางปกติของแต่ละวิชา
-    for (let i = 0; i < n; i++) {
-      let expectedHrs = 0;
-      if (isHistoricalLog) {
-        expectedHrs = (logMap[dateStr] && logMap[dateStr][i]) ? logMap[dateStr][i] : 0;
-      } else {
-        expectedHrs = baseHpd[dow][i];
-      }
-
-      if (expectedHrs > 0) {
-        let rem = results[i].totalHrs - accHrs[i];
-        if (rem > 0) {
-          let canTake = Math.min(expectedHrs, rem);
-          finalAlloc[i] += canTake;
-          
-          // ถ้าชั่วโมงที่จัดไว้ มากกว่าชั่วโมงที่ต้องการเพื่อจบ ส่วนเกินจะกลายเป็น Surplus
-          if (withTransfer) surplusPool += (expectedHrs - canTake);
-        } else if (withTransfer) {
-          // ถ้าวิชานั้นจบไปแล้ว เวลาทั้งหมดจะเทเข้ากองกลาง Surplus ทันที
-          surplusPool += expectedHrs;
-        }
-      }
-    }
-
-    // ขั้นที่ 2: ระบบเกลี่ยเวลาแบบ Waterfall Allocation (เทให้ทีละวิชาจบไวที่สุด)
-    if (withTransfer && surplusPool > 0) {
+    if (isHistoricalLog) {
       for (let i = 0; i < n; i++) {
-        let rem = results[i].totalHrs - (accHrs[i] + finalAlloc[i]);
-        if (rem > 0) {
-          // ทุ่มเวลาทั้งหมดจากกองกลางที่มีให้วิชานี้ก่อน
-          let take = Math.min(surplusPool, rem);
-          finalAlloc[i] += take;
-          surplusPool -= take;
-          
-          // ถ้าเวลาในกองกลางหมด ก็จะหยุดเกลี่ยในวันนี้ทันที 
-          // (ส่งผลให้วิชาถัดๆ ไปต้องรอคิวให้วิชาปัจจุบันจบก่อน ตามโจทย์เคมี-ฟิสิกส์)
-          if (surplusPool <= 0) break;
+        const loggedHrs = (logMap[dateStr] && logMap[dateStr][i]) ? logMap[dateStr][i] : 0;
+        if (loggedHrs > 0) {
+          if (accHrs[i] >= results[i].totalHrs && withTransfer) {
+            surplusPool += loggedHrs;
+          } else {
+            finalAlloc[i] = loggedHrs;
+          }
+        }
+      }
+    } else {
+      // เมื่อไม่มี Log ของวันนี้หรืออนาคต ระบบจะดึงแผนตั้งต้น (Base Plan) มาใช้วิเคราะห์แทน
+      for (let i = 0; i < n; i++) {
+        const baseHrs = baseHpd[dow][i];
+        if (baseHrs > 0) {
+          if (accHrs[i] < results[i].totalHrs) {
+            finalAlloc[i] = baseHrs;
+          } else if (withTransfer) {
+            surplusPool += baseHrs;
+          }
         }
       }
     }
 
-    // ขั้นที่ 3: บันทึกความคืบหน้าของวันนี้ และตรวจสอบวันจบของวิชานั้นๆ
+    if (withTransfer && surplusPool > 0) {
+      let activeReceivers = [];
+      
+      for (let i = 0; i < n; i++) {
+        if (accHrs[i] < results[i].totalHrs && baseHpd[dow][i] > 0) {
+          activeReceivers.push(i);
+        }
+      }
+
+      if (activeReceivers.length === 0) {
+        for (let i = 0; i < n; i++) {
+          if (accHrs[i] < results[i].totalHrs) {
+            activeReceivers.push(i);
+          }
+        }
+      }
+
+      if (activeReceivers.length > 0) {
+        // เรียงวิชาตาม "remaining hours น้อยที่สุดก่อน" เพื่อให้วิชาที่ใกล้จบได้รับ surplus ก่อน
+        // ทำให้วันเรียนจบของแต่ละวิชาเร็วที่สุดเท่าที่จะเป็นไปได้
+        activeReceivers.sort((a, b) => {
+          const remA = results[a].totalHrs - accHrs[a] - (finalAlloc[a] || 0);
+          const remB = results[b].totalHrs - accHrs[b] - (finalAlloc[b] || 0);
+          return remA - remB;
+        });
+        
+        let remaining = surplusPool;
+        for (const idx of activeReceivers) {
+          if (remaining <= 0) break;
+          const need = results[idx].totalHrs - accHrs[idx] - (finalAlloc[idx] || 0);
+          if (need <= 0) continue;
+          const give = Math.min(remaining, need);
+          finalAlloc[idx] = (finalAlloc[idx] || 0) + give;
+          remaining -= give;
+        }
+        // surplus ที่เหลือจริงๆ (ถ้ามี) แจกให้วิชาที่ยังไม่จบทั้งหมดเท่าๆ กัน
+        if (remaining > 0) {
+          const stillActive = activeReceivers.filter(i => accHrs[i] < results[i].totalHrs);
+          if (stillActive.length > 0) {
+            const share = remaining / stillActive.length;
+            stillActive.forEach(idx => { finalAlloc[idx] = (finalAlloc[idx] || 0) + share; });
+          }
+        }
+      }
+    }
+
     for (let i = 0; i < n; i++) {
-      if (finalAlloc[i] > 0 && !results[i].done) {
-        accHrs[i] += finalAlloc[i];
+      if (finalAlloc[i] > 0 && accHrs[i] < results[i].totalHrs) {
+        const remRequired = results[i].totalHrs - accHrs[i];
+        const actualGain = Math.min(finalAlloc[i], remRequired);
+
+        accHrs[i] += actualGain;
+
         if (accHrs[i] >= results[i].totalHrs) {
           results[i].finDate = new Date(cur);
           results[i].done = true;
+          
+          if (withTransfer && finalAlloc[i] > actualGain) {
+            let residual = finalAlloc[i] - actualGain;
+            // เรียงวิชาตาม remaining น้อยสุดก่อน เพื่อให้วิชาที่ใกล้จบได้รับ residual ก่อน
+            const residualReceivers = [];
+            for (let j = 0; j < n; j++) {
+              if (j !== i && accHrs[j] < results[j].totalHrs) {
+                residualReceivers.push(j);
+              }
+            }
+            residualReceivers.sort((a, b) => {
+              const remA = results[a].totalHrs - accHrs[a];
+              const remB = results[b].totalHrs - accHrs[b];
+              return remA - remB;
+            });
+            for (const j of residualReceivers) {
+              if (residual <= 0) break;
+              const nextRem = results[j].totalHrs - accHrs[j];
+              const nextGain = Math.min(residual, nextRem);
+              accHrs[j] += nextGain;
+              residual -= nextGain;
+              if (accHrs[j] >= results[j].totalHrs) {
+                results[j].finDate = new Date(cur);
+                results[j].done = true;
+              }
+            }
+          }
         }
       }
     }
@@ -785,6 +845,7 @@ function rLog(){
   if(logFrm) logFrm.style.display=has?'block':'none';
   if(!has)return;
   
+  // แก้วันที่เริ่มต้นให้ดึง Local Time ที่แท้จริงจากเครื่องของผู้ใช้
   const now = new Date();
   const dStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
   document.getElementById('lDate').value=dStr;
@@ -913,16 +974,18 @@ function rHist(){
   const c=document.getElementById('histList');if(!c)return;
   if(!S.logs.length){c.innerHTML='<div class="emp">ยังไม่มีรายการบันทึกเวลาในระบบครับ</div>';return}
   c.innerHTML='';
-  [...S.logs].reverse().forEach((log,ri)=>{
-    const i=S.logs.length-1-ri;
-    const d=document.createElement('div');d.className='le';
-    const chips=log.ents.map(e=>{const cl=cc(e.si);return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${e.name} ${e.hrs}ชม.</span>`;}).join('');
-    d.innerHTML=`<div>
-      <div style="font-weight:600;color:var(--color-text-primary);margin-bottom:4px">${fmtD(log.date)} — รวม ${log.tot.toFixed(1)} ชม.</div>
-      <div>${chips}</div>
-    </div><button class="db" onclick="delLog(${i})"><i class="ti ti-trash" aria-hidden="true"></i> ลบ</button>`;
-    c.appendChild(d);
-  });
+  // สร้าง array พร้อม original index แล้ว sort ตามวันที่ล่าสุดก่อน
+  S.logs.map((log,i)=>({log,i}))
+    .sort((a,b)=> b.log.date.localeCompare(a.log.date))
+    .forEach(({log,i})=>{
+      const d=document.createElement('div');d.className='le';
+      const chips=log.ents.map(e=>{const cl=cc(e.si);return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${e.name} ${e.hrs}ชม.</span>`;}).join('');
+      d.innerHTML=`<div>
+        <div style="font-weight:600;color:var(--color-text-primary);margin-bottom:4px">${fmtD(log.date)} — รวม ${log.tot.toFixed(1)} ชม.</div>
+        <div>${chips}</div>
+      </div><button class="db" onclick="delLog(${i})"><i class="ti ti-trash" aria-hidden="true"></i> ลบ</button>`;
+      c.appendChild(d);
+    });
 }
 
 function fmtD(ds){const d=new Date(ds+'T00:00:00');return d.toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'})}
@@ -952,6 +1015,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     if(elN) elN.value=S.subjects.length;
   }
   
+  // แก้วันที่เริ่มต้นให้ดึง Local Time
   const now = new Date();
   const dStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
   
