@@ -56,10 +56,13 @@ button:active { background: #edf2f7; }
 .rb { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 11px 14px; margin: 6px 0; font-size: 13px; color: var(--color-text-primary); line-height: 1.9; border: 0.5px solid var(--color-border-tertiary); }
 .rb b { font-weight: 600; }
 .rb.info { background: #E6F1FB; border-color: #B5D4F4; color: #0C447C; }
-.si { display: grid; grid-template-columns: 22px 1fr 80px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.si { display: grid; grid-template-columns: 22px 1fr 128px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
 .si:last-child { border-bottom: none; }
 .sn { font-size: 12px; text-align: center; font-weight: 600; border-radius: var(--border-radius-md); padding: 2px 0; }
 .si input { margin-bottom: 0; }
+.hm { display: flex; align-items: center; gap: 3px; }
+.hm input[type=number] { width: 44px; text-align: center; padding: 6px 3px; margin-bottom: 0; }
+.hm span { font-size: 10.5px; color: var(--color-text-tertiary); white-space: nowrap; }
 .pr { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
 .pr:last-child { border-bottom: none; }
 .pb { flex: 1; height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; border: 0.5px solid var(--color-border-secondary); }
@@ -68,7 +71,7 @@ button:active { background: #edf2f7; }
 .emp { text-align: center; padding: 2.5rem; color: var(--color-text-tertiary); font-size: 14px; }
 .ts { padding: 9px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
 .ts:last-child { border-bottom: none; }
-.tr { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.tr { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
 .tr lbl { margin: 0; font-size: 13px; }
 .tr input { margin: 0; width: 75px; }
 .le { padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; justify-content: space-between; align-items: flex-start; }
@@ -124,8 +127,8 @@ button:active { background: #edf2f7; }
     <div id="subjSec" style="display:none">
       <div class="dv"></div>
       <div class="sl">รายชื่อวิชาและชั่วโมงเป้าหมาย</div>
-      <div style="display:grid;grid-template-columns:22px 1fr 80px;gap:8px;padding:4px 0 8px">
-        <div></div><div style="font-size:11px;color:var(--color-text-tertiary)">ชื่อวิชา</div><div style="font-size:11px;color:var(--color-text-tertiary)">ชม. รวม</div>
+      <div style="display:grid;grid-template-columns:22px 1fr 128px;gap:8px;padding:4px 0 8px">
+        <div></div><div style="font-size:11px;color:var(--color-text-tertiary)">ชื่อวิชา</div><div style="font-size:11px;color:var(--color-text-tertiary)">ชม. : นาที</div>
       </div>
       <div id="subjList"></div>
       <div id="tHrsBox" class="rb info" style="display:none;margin-top:10px"><i class="ti ti-clock" aria-hidden="true"></i> รวมชั่วโมงทั้งหมด: <b id="tHrsLbl">-</b></div>
@@ -160,7 +163,7 @@ button:active { background: #edf2f7; }
       
       <div id="pCustom" style="display:none">
         <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px"><i class="ti ti-info-circle" aria-hidden="true"></i> ระบุวิชา วัน/ช่วงเวลา และจำนวนชั่วโมงต่อสัปดาห์</div>
-        <div style="display:grid;grid-template-columns:1fr 90px 54px;gap:8px;padding:4px 0;margin-bottom:4px">
+        <div style="display:grid;grid-template-columns:1fr 128px 40px;gap:8px;padding:4px 0;margin-bottom:4px">
           <div style="font-size:11px;color:var(--color-text-tertiary)">วิชา / วัน-ช่วงเวลา</div>
           <div style="font-size:11px;color:var(--color-text-tertiary)">ชม./สัปดาห์</div>
           <div></div>
@@ -196,7 +199,7 @@ button:active { background: #edf2f7; }
       <lbl>วันที่บันทึก</lbl>
       <input type="date" id="lDate" style="max-width:200px;margin-bottom:14px"/>
       <div id="lSubjs"></div>
-      <div id="lTotBox" class="rb info" style="display:none;margin-bottom:10px"><i class="ti ti-check" aria-hidden="true"></i> รวมวันนี้: <b id="lTotLbl">0</b> ชม.</div>
+      <div id="lTotBox" class="rb info" style="display:none;margin-bottom:10px"><i class="ti ti-check" aria-hidden="true"></i> รวมวันนี้: <b id="lTotLbl">0 ชม.</b></div>
       <button onclick="saveLog()" style="background:#FAEEDA;color:#633806;border-color:#FAC775"><i class="ti ti-check" aria-hidden="true"></i> บันทึกวันนี้</button>
     </div>
   </div>
@@ -649,16 +652,43 @@ function renderComparisonTable(data, targetEl) {
   targetEl.innerHTML = html;
 }
 
+function fmtHM(dec){
+  const d=Math.max(0,dec||0);
+  let h=Math.floor(d+1e-9);
+  let m=Math.round((d-h)*60);
+  if(m>=60){h+=1;m=0;}
+  return m>0?`${h} ชม. ${m} นาที`:`${h} ชม.`;
+}
+
+function hmToDec(h,m){return (+h||0)+(+m||0)/60;}
+
+function splitHM(dec){
+  const d=Math.max(0,dec||0);
+  let h=Math.floor(d+1e-9);
+  let m=Math.round((d-h)*60);
+  if(m>=60){h+=1;m=0;}
+  return {h,m};
+}
+
+function getSubjHrs(i){
+  const elH=document.getElementById('sh'+i), elM=document.getElementById('shm'+i);
+  return hmToDec(elH?elH.value:0, elM?elM.value:0);
+}
+
 function genSubj(){
   const n=+document.getElementById('nSubj').value||0;
   if(!n)return;
   const c=document.getElementById('subjList');c.innerHTML='';
   for(let i=0;i<n;i++){
     const ex=S.subjects[i]||{};const cl=cc(i);
+    const {h:dh,m:dm}=splitHM(ex.totalHrs||2);
     const d=document.createElement('div');d.className='si';
     d.innerHTML=`<div class="sn" style="background:${cl.bg};color:${cl.tx}">${i+1}</div>
       <input type="text" id="sn${i}" value="${ex.name||''}" placeholder="ชื่อวิชา" style="margin-bottom:0"/>
-      <input type="number" id="sh${i}" value="${ex.totalHrs||2}" min="0.5" step="0.5" style="margin-bottom:0" oninput="updTot()"/>`;
+      <div class="hm">
+        <input type="number" id="sh${i}" value="${dh}" min="0" step="1" style="margin-bottom:0" oninput="updTot()"/><span>ชม.</span>
+        <input type="number" id="shm${i}" value="${dm}" min="0" max="59" step="5" style="margin-bottom:0" oninput="updTot()"/><span>น.</span>
+      </div>`;
     c.appendChild(d);
   }
   document.getElementById('subjSec').style.display='block';
@@ -666,11 +696,12 @@ function genSubj(){
 }
 
 function updTot(){
-  let t=0;document.querySelectorAll('[id^="sh"]').forEach(x=>t+=+x.value||0);
+  let t=0,i=0;
+  while(document.getElementById('sh'+i)){ t+=getSubjHrs(i); i++; }
   const tBox = document.getElementById('tHrsBox');
   const tLbl = document.getElementById('tHrsLbl');
   if(tBox) tBox.style.display=t>0?'block':'none';
-  if(tLbl) tLbl.textContent=t.toFixed(1)+' ชม.';
+  if(tLbl) tLbl.textContent=fmtHM(t);
 }
 
 function saveSetup(){
@@ -681,7 +712,7 @@ function saveSetup(){
     const old=S.subjects.find(x=>x.name===nameVal);
     ns.push({
       name:nameVal||('วิชาที่'+(i+1)),
-      totalHrs:+document.getElementById('sh'+i).value||0,
+      totalHrs:getSubjHrs(i),
       doneHrs:old?old.doneHrs:0
     });
   }
@@ -722,11 +753,11 @@ function rWkGrid(){
       const nm=S.subjects[sl.si]?S.subjects[sl.si].name:'?';
       const short=nm.length>5?nm.slice(0,5)+'…':nm;
       const cl=cc(sl.si);
-      h+=`<div class="ds" onclick="openWkEdit(${di},${si})" title="${nm}" style="background:${cl.bg};border-color:${cl.bg};color:${cl.tx}">${short}<br><span style="opacity:.8;font-size:10px">${sl.hrs}ชม.</span></div>`;
+      h+=`<div class="ds" onclick="openWkEdit(${di},${si})" title="${nm}" style="background:${cl.bg};border-color:${cl.bg};color:${cl.tx}">${short}<br><span style="opacity:.8;font-size:10px">${fmtHM(sl.hrs)}</span></div>`;
     });
     h+=`<div class="ds da" onclick="addWkSlot(${di})">+</div>`;
     const tot=(S.wPlan[di]||[]).reduce((a,x)=>a+x.hrs,0);
-    if(tot>0)h+=`<div class="dt">${tot.toFixed(1)}ชม.</div>`;
+    if(tot>0)h+=`<div class="dt">${fmtHM(tot)}</div>`;
     col.innerHTML=h;g.appendChild(col);
   });
   rWkSum();
@@ -741,12 +772,18 @@ function addWkSlot(di){
 function openWkEdit(di,si){
   const ed=document.getElementById('wkEdit');ed.style.display='block';
   const sl=S.wPlan[di][si];
+  const {h:eh,m:em}=splitHM(sl.hrs);
   const opts=S.subjects.map((s,i)=>`<option value="${i}" ${i===sl.si?'selected':''}>${s.name}</option>`).join('');
   ed.innerHTML=`<div class="se">
     <div style="font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:10px"><i class="ti ti-edit" aria-hidden="true"></i> แก้ไขตารางเรียน — วัน${DAYS_FULL[di]}</div>
-    <div style="display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:10px">
+    <div style="display:grid;grid-template-columns:1fr 128px;gap:8px;margin-bottom:10px">
       <div><lbl>วิชา</lbl><select id="eSubj" style="margin-bottom:0">${opts}</select></div>
-      <div><lbl>ชม./วัน</lbl><input type="number" id="eHrs" value="${sl.hrs}" min="0.5" step="0.5" style="margin-bottom:0"/></div>
+      <div><lbl>ชม./วัน</lbl>
+        <div class="hm">
+          <input type="number" id="eHrsH" value="${eh}" min="0" step="1" style="margin-bottom:0"/><span>ชม.</span>
+          <input type="number" id="eHrsM" value="${em}" min="0" max="59" step="5" style="margin-bottom:0"/><span>น.</span>
+        </div>
+      </div>
     </div>
     <div style="display:flex;gap:8px">
       <button onclick="saveWkSlot(${di},${si})" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97"><i class="ti ti-check" aria-hidden="true"></i> บันทึก</button>
@@ -757,7 +794,8 @@ function openWkEdit(di,si){
 }
 
 function saveWkSlot(di,si){
-  S.wPlan[di][si]={si:+document.getElementById('eSubj').value,hrs:+document.getElementById('eHrs').value||0.5};
+  const hrs=hmToDec(document.getElementById('eHrsH').value,document.getElementById('eHrsM').value)||0.5;
+  S.wPlan[di][si]={si:+document.getElementById('eSubj').value,hrs};
   document.getElementById('wkEdit').style.display='none';
   save();rWkGrid();rPlanRes();
 }
@@ -774,16 +812,22 @@ function rWkSum(){
     let w=0;S.wPlan.forEach(d=>(d||[]).forEach(sl=>{if(sl.si===si)w+=sl.hrs}));
     if(w>0){
       const cl=cc(si);
-      lines.push(`<span class="chip" style="background:${cl.bg};color:${cl.tx}">${s.name}</span> ${w.toFixed(1)} ชม./สัปดาห์`);
+      lines.push(`<span class="chip" style="background:${cl.bg};color:${cl.tx}">${s.name}</span> ${fmtHM(w)}/สัปดาห์`);
       tot+=w;
     }
   });
   const box=document.getElementById('wkSum');if(!box)return;
   box.style.display=tot>0?'block':'none';
-  if(tot>0)box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>เวลาเรียนรวม: ${tot.toFixed(1)} ชม./สัปดาห์</b></div></div>`;
+  if(tot>0)box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>เวลาเรียนรวม: ${fmtHM(tot)}/สัปดาห์</b></div></div>`;
 }
 
 function addCSlot(){S.cPlan.push({si:0,label:'',hrs:1});rCSlots()}
+
+function updCSlotHrs(i){
+  const h=document.getElementById('chH'+i), m=document.getElementById('chM'+i);
+  S.cPlan[i].hrs=hmToDec(h?h.value:0,m?m.value:0);
+  rCSum();
+}
 
 function rCSlots(){
   const c=document.getElementById('cSlots');if(!c)return;c.innerHTML='';
@@ -793,13 +837,17 @@ function rCSlots(){
   }
   S.cPlan.forEach((sl,i)=>{
     const opts=S.subjects.map((s,si)=>`<option value="${si}" ${si===sl.si?'selected':''}>${s.name}</option>`).join('');
+    const {h:ch,m:cm}=splitHM(sl.hrs);
     const d=document.createElement('div');
-    d.style.cssText='display:grid;grid-template-columns:1fr 90px 50px;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);align-items:center';
+    d.style.cssText='display:grid;grid-template-columns:1fr 128px 40px;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);align-items:center';
     d.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <select onchange="S.cPlan[${i}].si=+this.value;rCSum()" style="margin-bottom:0;font-size:12px">${opts}</select>
         <input type="text" placeholder="เช่น จ-พ เช้า" value="${sl.label||''}" oninput="S.cPlan[${i}].label=this.value" style="margin-bottom:0;font-size:12px"/>
       </div>
-      <input type="number" value="${sl.hrs}" min="0.5" step="0.5" oninput="S.cPlan[${i}].hrs=+this.value||0;rCSum()" style="margin-bottom:0;font-size:12px"/>
+      <div class="hm">
+        <input type="number" id="chH${i}" value="${ch}" min="0" step="1" oninput="updCSlotHrs(${i})" style="margin-bottom:0"/><span>ชม.</span>
+        <input type="number" id="chM${i}" value="${cm}" min="0" max="59" step="5" oninput="updCSlotHrs(${i})" style="margin-bottom:0"/><span>น.</span>
+      </div>
       <button onclick="S.cPlan.splice(${i},1);rCSlots()" style="padding:4px 8px;font-size:12px;color:var(--color-text-danger)"><i class="ti ti-x" aria-hidden="true"></i></button>`;
     c.appendChild(d);
   });
@@ -815,8 +863,8 @@ function rCSum(){
   const box=document.getElementById('cSum');if(!box)return;
   box.style.display=tot>0?'block':'none';
   if(tot>0){
-    const lines=Object.entries(map).map(([k,v])=>{const cl=cc(siMap[k]);return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${k}</span> ${v.toFixed(1)} ชม.`;});
-    box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>ภาระงานรวม: ${tot.toFixed(1)} ชม./สัปดาห์</b></div></div>`;
+    const lines=Object.entries(map).map(([k,v])=>{const cl=cc(siMap[k]);return `<span class="chip" style="background:${cl.bg};color:${cl.tx}">${k}</span> ${fmtHM(v)}`;});
+    box.innerHTML=`<div class="rb">${lines.join('<br>')} <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--color-border-tertiary)"><b>ภาระงานรวม: ${fmtHM(tot)}/สัปดาห์</b></div></div>`;
   }
 }
 
@@ -859,21 +907,32 @@ function rLog(){
         <span class="chip" style="background:${cl.bg};color:${cl.tx}">${s.name}</span>
         <span style="font-size:11px;color:var(--color-text-secondary)">เรียนแล้ว ${s.doneHrs.toFixed(1)} / ${s.totalHrs} ชม. (คงเหลือ ${rem.toFixed(1)} ชม.)</span>
       </div>
-      <div class="tr" style="margin-top:6px"><lbl>บันทึกชั่วโมงที่เรียนเพิ่มวันนี้</lbl><input type="number" id="li${i}" min="0" step="0.5" value="0" oninput="updLTot()" style="width:70px;margin:0"/></div>`;
+      <div class="tr" style="margin-top:6px">
+        <lbl>บันทึกเวลาที่เรียนเพิ่มวันนี้</lbl>
+        <div class="hm">
+          <input type="number" id="li${i}" min="0" step="1" value="0" oninput="updLTot()" style="width:44px;margin:0"/><span>ชม.</span>
+          <input type="number" id="lim${i}" min="0" max="59" step="5" value="0" oninput="updLTot()" style="width:44px;margin:0"/><span>น.</span>
+        </div>
+      </div>`;
     c.appendChild(d);
   });
   document.getElementById('lTotBox').style.display='none';
 }
 
+function getLogHrs(i){
+  const elH=document.getElementById('li'+i), elM=document.getElementById('lim'+i);
+  return hmToDec(elH?elH.value:0, elM?elM.value:0);
+}
+
 function updLTot(){
   let t=0;S.subjects.forEach((_,i)=>{
     const el = document.getElementById('li'+i);
-    if(el) t+=+el.value||0;
+    if(el) t+=getLogHrs(i);
   });
   const tBox = document.getElementById('lTotBox');
   const tLbl = document.getElementById('lTotLbl');
   if(tBox) tBox.style.display=t>0?'block':'none';
-  if(tLbl) tLbl.textContent=t.toFixed(1);
+  if(tLbl) tLbl.textContent=fmtHM(t);
 }
 
 function saveLog(){
@@ -882,7 +941,7 @@ function saveLog(){
   const ents=[];let tot=0;
   S.subjects.forEach((s,i)=>{
     const el = document.getElementById('li'+i);
-    const h=el?+el.value||0:0;
+    const h=el?getLogHrs(i):0;
     if(h>0){ents.push({si:i,name:s.name,hrs:h});s.doneHrs+=h;tot+=h;}
   });
   if(!ents.length){alert('กรุณากรอกเวลาเรียนเพื่อบันทึกครับ');return}
@@ -899,7 +958,7 @@ function saveLog(){
     S.logs.push({date,ents,tot});
   }
   
-  save();alert(`บันทึกชั่วโมงสำเร็จ! เพิ่มรวม ${tot.toFixed(1)} ชม.`);sw('dash');
+  save();alert(`บันทึกชั่วโมงสำเร็จ! เพิ่มรวม ${fmtHM(tot)}`);sw('dash');
 }
 
 function rDash(){
